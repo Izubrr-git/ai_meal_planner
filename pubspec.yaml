@@ -1,0 +1,49 @@
+name: ai_meal_planner
+description: AI Meal Planner - персональный генератор планов питания
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.4.9
+
+  # HTTP Client
+  dio: ^5.4.0
+  dio_smart_retry: ^5.0.0
+
+  # Environment variables
+  flutter_dotenv: ^5.1.0
+
+  # Local Storage
+  shared_preferences: ^2.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
+  # Navigation
+  go_router: ^12.0.0
+
+  # UI Helpers
+  intl: ^0.18.1
+  equatable: ^2.0.5
+  shimmer: ^3.0.0
+
+  # Icons
+  cupertino_icons: ^1.0.6
+  flutter_launcher_icons: ^0.13.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  build_runner: ^2.4.8
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
