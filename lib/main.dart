@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/di/service_locator.dart';
@@ -9,10 +8,6 @@ import 'features/meal_planner/presentation/screens/api_key_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Load environment variables
-  await dotenv.load(fileName: "assets/.env");
-
   // Initialize API keys
   await ApiKeys.init();
 

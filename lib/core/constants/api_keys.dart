@@ -1,4 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,36 +12,22 @@ class ApiKeys {
     print('🔧 Initializing ApiKeys...');
 
     try {
-      // 1. Получаем SharedPreferences
       _prefs = await SharedPreferences.getInstance();
 
-      // 2. Пробуем получить ключ из SharedPreferences (ПРИОРИТЕТ 1)
       final storedKey = _prefs?.getString('openai_api_key');
       if (storedKey != null && storedKey.isNotEmpty) {
         print('🔑 Found API key in SharedPreferences');
         _cachedKey = storedKey;
         _initialized = true;
-
-        // Также обновляем в dotenv для совместимости
-        dotenv.env['OPENAI_API_KEY'] = storedKey;
         return;
       }
 
-      // 3. Пробуем получить из .env (ПРИОРИТЕТ 2 - только для разработки)
-      final envKey = dotenv.get('OPENAI_API_KEY', fallback: '');
-      if (envKey.isNotEmpty && envKey != 'your_openai_api_key_here') {
-        print('🔑 Found API key in .env');
-        _cachedKey = envKey;
-        _initialized = true;
-        return;
-      }
-
-      print('🔑 No API key found');
-      _initialized = true; // Все равно отмечаем как инициализированное
+      print('🔑 No API key found in SharedPreferences');
+      _initialized = true;
 
     } catch (e) {
       print('❌ Error initializing ApiKeys: $e');
-      _initialized = true; // Все равно отмечаем как инициализированное
+      _initialized = true;
     }
   }
 
@@ -58,16 +43,13 @@ class ApiKeys {
     if (!_initialized) return false;
     return _cachedKey != null &&
         _cachedKey!.isNotEmpty &&
-        _cachedKey! != 'your_openai_api_key_here' &&
         _cachedKey!.startsWith('sk-');
   }
 
   static bool get isTestKey {
     if (!_initialized) return true;
     if (_cachedKey == null) return true;
-    return _cachedKey!.isEmpty ||
-        _cachedKey == 'your_openai_api_key_here' ||
-        !_cachedKey!.startsWith('sk-');
+    return _cachedKey!.isEmpty || !_cachedKey!.startsWith('sk-');
   }
 
   static Future<void> saveKey(String key) async {
@@ -81,9 +63,6 @@ class ApiKeys {
       await _prefs?.setString('openai_api_key', key);
       _cachedKey = key;
       _initialized = true;
-
-      // Также обновляем в dotenv для совместимости
-      dotenv.env['OPENAI_API_KEY'] = key;
 
       print('✅ API key saved successfully');
     } catch (e) {
@@ -102,10 +81,7 @@ class ApiKeys {
 
       await _prefs?.remove('openai_api_key');
       _cachedKey = null;
-      _initialized = true; // Не сбрасываем флаг инициализации!
-
-      // Также очищаем из dotenv
-      dotenv.env.remove('OPENAI_API_KEY');
+      _initialized = true;
 
       print('✅ API key cleared successfully');
     } catch (e) {
