@@ -20,8 +20,8 @@ class OpenAIService {
     required int days,
   }) async {
     try {
-      final apiKey = await ApiKeys.openAIKey;
-      if (apiKey.isEmpty) {
+      final apiKey = ApiKeys.openAIKey;
+      if (apiKey == null || apiKey.isEmpty) {
         throw ApiException('OpenAI API ключ не настроен. Пожалуйста, настройте его в настройках приложения.');
       }
 

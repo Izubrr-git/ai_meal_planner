@@ -14,6 +14,9 @@ Future<void> main() async {
   // Load environment variables from assets
   await dotenv.load(fileName: "assets/.env");
 
+  // Initialize ApiKeys
+  await ApiKeys.init();
+
   // Initialize services
   await ServiceLocator.init();
 
