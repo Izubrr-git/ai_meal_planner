@@ -20,8 +20,9 @@ class OpenAIService {
     required int days,
   }) async {
     try {
-      if (!ApiKeys.isConfigured) {
-        throw ApiException('OpenAI API ключ не настроен');
+      final apiKey = await ApiKeys.openAIKey;
+      if (apiKey.isEmpty) {
+        throw ApiException('OpenAI API ключ не настроен. Пожалуйста, настройте его в настройках приложения.');
       }
 
       final prompt = _buildPrompt(
@@ -36,7 +37,7 @@ class OpenAIService {
         '/chat/completions',
         options: Options(
           headers: {
-            'Authorization': 'Bearer ${ApiKeys.openAIKey}',
+            'Authorization': 'Bearer $apiKey',
           },
         ),
         data: {
@@ -69,6 +70,16 @@ class OpenAIService {
       } else if (e.type == DioExceptionType.connectionError) {
         throw ApiException('Нет подключения к интернету');
       }
+
+      // OpenAI specific errors
+      if (e.response?.statusCode == 401) {
+        throw ApiException('Неверный API ключ. Проверьте ключ в настройках.');
+      } else if (e.response?.statusCode == 429) {
+        throw ApiException('Лимит запросов исчерпан. Попробуйте позже.');
+      } else if (e.response?.statusCode == 500) {
+        throw ApiException('Ошибка сервера OpenAI. Попробуйте позже.');
+      }
+
       throw ApiException('Ошибка сети: ${e.message}');
     } catch (e) {
       throw ApiException('Ошибка: $e');
