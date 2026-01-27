@@ -5,22 +5,20 @@ class AppErrorWidget extends StatelessWidget {
   final VoidCallback? onRetry;
   final VoidCallback? onDismiss;
   final String? retryButtonText;
-  final String? dismissButtonText;
 
   const AppErrorWidget({
     super.key,
     required this.error,
     this.onRetry,
     this.onDismiss,
-    this.retryButtonText = 'Повторить',
-    this.dismissButtonText = 'Скрыть',
+    this.retryButtonText = 'Попробовать снова',
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.red[50],
         borderRadius: BorderRadius.circular(8),
@@ -66,7 +64,6 @@ class AppErrorWidget extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // Кнопки действий
           Row(
             children: [
               if (onRetry != null)
@@ -78,21 +75,6 @@ class AppErrorWidget extends StatelessWidget {
                       foregroundColor: Colors.white,
                     ),
                     child: Text(retryButtonText!),
-                  ),
-                ),
-
-              if (onRetry != null && onDismiss != null)
-                const SizedBox(width: 8),
-
-              if (onDismiss != null)
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: onDismiss,
-                    style: OutlinedButton.styleFrom(
-                      side: BorderSide(color: Colors.red[700]!),
-                      foregroundColor: Colors.red[700],
-                    ),
-                    child: Text(dismissButtonText!),
                   ),
                 ),
             ],

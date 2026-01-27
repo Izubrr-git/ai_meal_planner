@@ -73,7 +73,12 @@ class MealPlanNotifier extends StateNotifier<MealPlanState> {
   }
 
   void clearError() {
-    state = state.copyWith(error: null);
+    state = MealPlanState(
+      currentPlan: state.currentPlan,
+      savedPlans: state.savedPlans,
+      isLoading: state.isLoading,
+      error: null,
+    );
   }
 
   Future<void> deletePlan(String id) async {

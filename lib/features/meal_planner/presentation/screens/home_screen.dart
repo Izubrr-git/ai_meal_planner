@@ -1,3 +1,4 @@
+import 'package:ai_meal_planner/features/meal_planner/presentation/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -78,58 +79,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<void> _retryQuickGenerate() async {
-    print('🔄 Retrying quick generate...');
-
-    final preferences = _userPreferences ?? UserPreferences.defaults();
-
-    await ref.read(mealPlanProvider.notifier).generateMealPlan(
-      goal: preferences.goal,
-      calories: preferences.targetCalories,
-      restrictions: preferences.restrictions,
-      allergies: preferences.allergies,
-      days: 3,
-    );
-
-    final state = ref.read(mealPlanProvider);
-    if (state.currentPlan != null && state.error == null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MealPlanDetailScreen(plan: state.currentPlan!),
-        ),
-      );
-    }
-  }
-
-  Future<void> _retryGenerateWithParams({
-    required String goal,
-    int? calories,
-    required List<String> restrictions,
-    required List<String> allergies,
-    required int days,
-  }) async {
-    print('🔄 Retrying generate with params...');
-
-    await ref.read(mealPlanProvider.notifier).generateMealPlan(
-      goal: goal,
-      calories: calories,
-      restrictions: restrictions,
-      allergies: allergies,
-      days: days,
-    );
-
-    final state = ref.read(mealPlanProvider);
-    if (state.currentPlan != null && state.error == null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MealPlanDetailScreen(plan: state.currentPlan!),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(mealPlanProvider);
@@ -139,6 +88,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: const Text('AI Meal Planner'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const SettingsScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: _navigateToHistory,
@@ -281,13 +241,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (state.error != null)
               AppErrorWidget(
                 error: state.error!,
-                onRetry: () {
-                  if (state.currentPlan != null) {
-                    _retryQuickGenerate();
-                  } else {
-                    _quickGenerate();
-                  }
-                },
+                onRetry: _quickGenerate,
                 onDismiss: () {
                   ref.read(mealPlanProvider.notifier).clearError();
                 },
