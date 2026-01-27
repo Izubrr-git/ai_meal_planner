@@ -65,16 +65,13 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
   Future<UserPreferences?> getPreferences() async {
     return await _localDataSource.getPreferences();
   }
+
+  Future<void> clearAllData() async {
+    await _localDataSource.clearAllData();
+  }
 }
 
 final mealPlanRepositoryProvider = Provider<MealPlanRepository>((ref) {
-  // Можно добавить флаг для переключения между реальным и моковым репозиторием
-  final useMock = false; // TODO: Сделать настройку
-
-  if (useMock) {
-    return MockMealPlanRepository();
-  }
-
   return MealPlanRepositoryImpl(
     remoteDataSource: ref.watch(remoteDataSourceProvider),
     localDataSource: ref.watch(localDataSourceProvider),

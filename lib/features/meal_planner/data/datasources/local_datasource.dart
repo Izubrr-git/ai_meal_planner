@@ -58,6 +58,16 @@ class LocalDataSource {
       return null;
     }
   }
+
+  Future<void> clearAllData() async {
+    try {
+      await _prefs.remove(_plansKey);
+      await _prefs.remove(_preferencesKey);
+    } catch (e) {
+      print('Error clearing all data: $e');
+      rethrow;
+    }
+  }
 }
 
 final localDataSourceProvider = Provider<LocalDataSource>((ref) {

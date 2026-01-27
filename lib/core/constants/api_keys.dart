@@ -61,10 +61,17 @@ class ApiKeys {
 
   static Future<void> clearKey() async {
     try {
+      print('🗑️ Clearing API key...');
       await _prefs?.remove('openai_api_key');
       _cachedKey = null;
+      _initialized = false;
+
+      dotenv.env.remove('OPENAI_API_KEY');
+
+      print('✅ API key cleared successfully');
     } catch (e) {
-      print('Error clearing API key: $e');
+      print('❌ Error clearing API key: $e');
+      rethrow;
     }
   }
 }

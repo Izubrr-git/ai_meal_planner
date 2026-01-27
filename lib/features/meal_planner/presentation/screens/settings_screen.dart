@@ -16,7 +16,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _formKey = GlobalKey<FormState>();
-  // ИЗМЕНЕНИЕ 1: Убираем late, инициализируем сразу
   UserPreferences _preferences = UserPreferences.defaults();
   bool _isLoading = false;
 
@@ -110,11 +109,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ) ?? false;
 
     if (confirmed && mounted) {
-      // TODO: Реализовать очистку ключа
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const ApiKeyScreen()),
-      );
+      setState(() {
+        _isLoading = true;
+      });
+
+      try {
+        await ref.read(mealPlanProvider.notifier).clearApiKey();
+
+        // 🔥 ИСПРАВЛЕНИЕ: Редирект на ApiKeyScreen БЕЗ возможности возврата
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (context) => const ApiKeyScreen()),
+                (route) => false, // Удаляем ВСЕ предыдущие экраны из стека
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          // Если ошибка - показываем уведомление, но остаемся на экране
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Ошибка очистки: $e'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
     }
   }
 
@@ -143,7 +168,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       });
 
       try {
-        // TODO: Реализовать очистку всех данных
+        await ref.read(mealPlanProvider.notifier).clearAllData();
+
+        _preferences = UserPreferences.defaults();
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -152,6 +179,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               backgroundColor: Colors.green,
             ),
           );
+
+          await _loadPreferences();
         }
       } catch (e) {
         if (mounted) {
@@ -174,7 +203,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ИЗМЕНЕНИЕ 2: Показываем индикатор загрузки пока данные не загружены
     if (_isLoading) {
       return Scaffold(
         appBar: AppBar(title: const Text('Настройки')),
@@ -193,7 +221,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Основная информация
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -209,7 +236,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Пол
                       DropdownButtonFormField<String>(
                         value: _preferences.gender ?? 'Мужской',
                         decoration: const InputDecoration(
@@ -230,7 +256,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Возраст
                       AppTextField(
                         initialValue: _preferences.age?.toString(),
                         hintText: 'Возраст',
@@ -255,7 +280,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Вес
                       AppTextField(
                         initialValue: _preferences.weight?.toString(),
                         hintText: 'Вес (кг)',
@@ -280,7 +304,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Рост
                       AppTextField(
                         initialValue: _preferences.height?.toString(),
                         hintText: 'Рост (см)',
@@ -305,7 +328,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: 12),
 
-                      // Уровень активности
                       DropdownButtonFormField<String>(
                         value: _preferences.activityLevel,
                         decoration: const InputDecoration(
@@ -337,7 +359,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               const SizedBox(height: 20),
 
-              // Рекомендуемые калории
               if (_preferences.age != null &&
                   _preferences.weight != null &&
                   _preferences.height != null &&
@@ -381,7 +402,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               const SizedBox(height: 20),
 
-              // Управление данными
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -397,7 +417,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Кнопка очистки API ключа
                       ListTile(
                         leading: const Icon(Icons.vpn_key, color: Colors.blue),
                         title: const Text('Управление API ключом'),
@@ -406,7 +425,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         onTap: _clearApiKey,
                       ),
 
-                      // Кнопка очистки всех данных
                       ListTile(
                         leading: const Icon(Icons.delete_forever, color: Colors.red),
                         title: const Text('Очистить все данные'),
@@ -421,7 +439,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
               const SizedBox(height: 32),
 
-              // Сохранить кнопка
               AppButton(
                 onPressed: _saveSettings,
                 text: 'Сохранить настройки',

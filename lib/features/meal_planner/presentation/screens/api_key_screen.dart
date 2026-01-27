@@ -47,14 +47,11 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
   }
 
   void _navigateToHome() {
-    // Обновляем состояние провайдера
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Используем Navigator для перехода
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const HomeScreen()),
-      );
-    });
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false, // Удаляем все предыдущие роуты
+    );
   }
 
   Future<void> _saveApiKey() async {
@@ -66,14 +63,10 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
       try {
         final apiKey = _apiKeyController.text.trim();
 
-        // Save to SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('openai_api_key', apiKey);
 
-        // Update .env in memory
         dotenv.env['OPENAI_API_KEY'] = apiKey;
-
-        // Немного задержки для лучшего UX
         await Future.delayed(const Duration(milliseconds: 500));
 
         _navigateToHome();
@@ -337,14 +330,10 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
     });
 
     try {
-      // Сохраняем флаг тестового режима
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('use_test_mode', true);
-
       // Немного задержки для лучшего UX
       await Future.delayed(const Duration(milliseconds: 500));
 
-      _navigateToHome();
+      _navigateToHome(); // Используем исправленный метод
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

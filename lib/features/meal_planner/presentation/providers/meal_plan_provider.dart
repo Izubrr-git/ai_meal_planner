@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/api/api_exceptions.dart';
+import '../../../../core/constants/api_keys.dart';
 import '../../data/repositories/meal_plan_repository_impl.dart';
 import '../../domain/entities/meal_plan.dart';
 import '../../domain/entities/user_preferencies.dart';
@@ -17,7 +19,6 @@ class MealPlanNotifier extends StateNotifier<MealPlanState> {
     required List<String> allergies,
     required int days,
   }) async {
-    // Меняем state сразу
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -42,10 +43,17 @@ class MealPlanNotifier extends StateNotifier<MealPlanState> {
     }
   }
 
+  Future<void> clearApiKey() async {
+    try {
+      await ApiKeys.clearKey();
+    } catch (e) {
+      throw ApiException('Ошибка очистки ключа: $e');
+    }
+  }
+
   Future<void> loadSavedPlans() async {
     try {
       final plans = await _repository.getSavedPlans();
-      // Обновляем state после получения данных
       state = state.copyWith(
         savedPlans: plans,
       );
@@ -109,26 +117,21 @@ class MealPlanNotifier extends StateNotifier<MealPlanState> {
   }
 
   Future<void> clearAllData() async {
-    state = state.copyWith(isLoading: true);
-
     try {
-      // Очищаем все планы
       final plans = state.savedPlans;
       for (final plan in plans) {
         await _repository.deletePlan(plan.id);
       }
 
-      // Сбрасываем текущий план
+      await _repository.savePreferences(UserPreferences.defaults());
+
       state = state.copyWith(
-        isLoading: false,
         savedPlans: [],
         currentPlan: null,
+        error: null,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Ошибка очистки всех данных: $e',
-      );
+      throw ApiException('Ошибка очистки данных: $e');
     }
   }
 }
