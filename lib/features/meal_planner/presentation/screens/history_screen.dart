@@ -86,7 +86,17 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 child: const Icon(Icons.delete, color: Colors.white),
               ),
               confirmDismiss: (direction) async {
-                return await _showDeleteDialog(plan);
+                final shouldDelete = await _showDeleteDialog(plan);
+                if (shouldDelete) {
+                  await ref.read(mealPlanProvider.notifier).deletePlan(plan.id);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('План удален'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+                return shouldDelete;
               },
               child: MealCard(
                 plan: plan,
@@ -119,12 +129,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Удалить'),
+            child: const Text('Удалить', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
-    ) ??
-        false;
+    ) ?? false;
   }
 
   Future<void> _showClearAllDialog() async {
@@ -132,7 +141,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Очистить всю историю?'),
-        content: const Text('Все сохраненные планы питания будут удалены'),
+        content: const Text('Все сохраненные планы питания будут удалены. Это действие нельзя отменить.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -140,15 +149,20 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Очистить'),
+            child: const Text('Очистить', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
-    ) ??
-        false;
+    ) ?? false;
 
-    if (confirmed) {
-      // TODO: Implement clear all functionality
+    if (confirmed && mounted) {
+      await ref.read(mealPlanProvider.notifier).clearAllPlans();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Вся история очищена'),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
   }
 }

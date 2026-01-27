@@ -69,6 +69,46 @@ class MealPlanNotifier extends StateNotifier<MealPlanState> {
   void clearError() {
     state = state.copyWith(error: null);
   }
+
+  Future<void> deletePlan(String id) async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      await _repository.deletePlan(id);
+      final updatedPlans = state.savedPlans.where((plan) => plan.id != id).toList();
+
+      state = state.copyWith(
+        isLoading: false,
+        savedPlans: updatedPlans,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Ошибка удаления плана: $e',
+      );
+    }
+  }
+
+  Future<void> clearAllPlans() async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      final plans = state.savedPlans;
+      for (final plan in plans) {
+        await _repository.deletePlan(plan.id);
+      }
+
+      state = state.copyWith(
+        isLoading: false,
+        savedPlans: [],
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Ошибка очистки истории: $e',
+      );
+    }
+  }
 }
 
 class MealPlanState {
