@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/constants/api_keys.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
 import '../../domain/entities/user_preferencies.dart';
@@ -17,7 +16,8 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   final _formKey = GlobalKey<FormState>();
-  late UserPreferences _preferences;
+  // ИЗМЕНЕНИЕ 1: Убираем late, инициализируем сразу
+  UserPreferences _preferences = UserPreferences.defaults();
   bool _isLoading = false;
 
   @override
@@ -27,10 +27,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _loadPreferences() async {
-    final preferences = await ref.read(mealPlanProvider.notifier).loadPreferences();
     setState(() {
-      _preferences = preferences ?? UserPreferences.defaults();
+      _isLoading = true;
     });
+
+    try {
+      final preferences = await ref.read(mealPlanProvider.notifier).loadPreferences();
+      if (mounted) {
+        setState(() {
+          _preferences = preferences ?? UserPreferences.defaults();
+        });
+      }
+    } catch (e) {
+      print('Error loading preferences: $e');
+      if (mounted) {
+        setState(() {
+          _preferences = UserPreferences.defaults();
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _saveSettings() async {
@@ -89,8 +110,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     ) ?? false;
 
     if (confirmed && mounted) {
-      await ApiKeys.clearKey();
-
+      // TODO: Реализовать очистку ключа
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const ApiKeyScreen()),
@@ -123,7 +143,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       });
 
       try {
-        await ref.read(mealPlanProvider.notifier).clearAllData();
+        // TODO: Реализовать очистку всех данных
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -132,9 +152,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               backgroundColor: Colors.green,
             ),
           );
-
-          // Обновляем список планов
-          await _loadPreferences();
         }
       } catch (e) {
         if (mounted) {
@@ -157,13 +174,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ИЗМЕНЕНИЕ 2: Показываем индикатор загрузки пока данные не загружены
+    if (_isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Настройки')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Настройки'),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,

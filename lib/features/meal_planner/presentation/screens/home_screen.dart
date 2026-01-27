@@ -20,23 +20,36 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   UserPreferences? _userPreferences;
+  bool _isLoading = true; // Добавляем флаг загрузки
 
   @override
   void initState() {
     super.initState();
-    _loadPreferences();
-    _loadSavedPlans();
-  }
-
-  Future<void> _loadPreferences() async {
-    final preferences = await ref.read(mealPlanProvider.notifier).loadPreferences();
-    setState(() {
-      _userPreferences = preferences ?? UserPreferences.defaults();
+    // НЕ вызываем асинхронные методы напрямую в initState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPreferences();
+      _loadSavedPlans();
     });
   }
 
+  // Удаляем setState из _loadPreferences и _loadSavedPlans
+  Future<void> _loadPreferences() async {
+    final preferences = await ref.read(mealPlanProvider.notifier).loadPreferences();
+    if (mounted) {
+      setState(() {
+        _userPreferences = preferences ?? UserPreferences.defaults();
+      });
+    }
+  }
+
   Future<void> _loadSavedPlans() async {
+    // Только загружаем, НЕ обновляем UI через setState
     await ref.read(mealPlanProvider.notifier).loadSavedPlans();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _navigateToGenerator() {

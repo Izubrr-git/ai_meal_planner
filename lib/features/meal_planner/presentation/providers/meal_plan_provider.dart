@@ -17,6 +17,7 @@ class MealPlanNotifier extends StateNotifier<MealPlanState> {
     required List<String> allergies,
     required int days,
   }) async {
+    // Меняем state сразу
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -42,17 +43,14 @@ class MealPlanNotifier extends StateNotifier<MealPlanState> {
   }
 
   Future<void> loadSavedPlans() async {
-    state = state.copyWith(isLoading: true);
-
     try {
       final plans = await _repository.getSavedPlans();
+      // Обновляем state после получения данных
       state = state.copyWith(
-        isLoading: false,
         savedPlans: plans,
       );
     } catch (e) {
       state = state.copyWith(
-        isLoading: false,
         error: e.toString(),
       );
     }

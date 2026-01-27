@@ -15,14 +15,23 @@ class HistoryScreen extends ConsumerStatefulWidget {
 }
 
 class _HistoryScreenState extends ConsumerState<HistoryScreen> {
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    _loadPlans();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPlans();
+    });
   }
 
   Future<void> _loadPlans() async {
     await ref.read(mealPlanProvider.notifier).loadSavedPlans();
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -43,7 +52,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             ),
         ],
       ),
-      body: state.isLoading
+      body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : plans.isEmpty
           ? Center(
