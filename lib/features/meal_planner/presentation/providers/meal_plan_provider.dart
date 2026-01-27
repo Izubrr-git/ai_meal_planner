@@ -109,6 +109,30 @@ class MealPlanNotifier extends StateNotifier<MealPlanState> {
       );
     }
   }
+
+  Future<void> clearAllData() async {
+    state = state.copyWith(isLoading: true);
+
+    try {
+      // Очищаем все планы
+      final plans = state.savedPlans;
+      for (final plan in plans) {
+        await _repository.deletePlan(plan.id);
+      }
+
+      // Сбрасываем текущий план
+      state = state.copyWith(
+        isLoading: false,
+        savedPlans: [],
+        currentPlan: null,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Ошибка очистки всех данных: $e',
+      );
+    }
+  }
 }
 
 class MealPlanState {
