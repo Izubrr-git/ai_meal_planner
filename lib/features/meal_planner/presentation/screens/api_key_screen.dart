@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -35,9 +34,6 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
       // Если ключ есть, автоматически используем его
       _apiKeyController.text = storedKey;
 
-      // Обновляем в памяти
-      dotenv.env['OPENAI_API_KEY'] = storedKey;
-
       // Немного задержки для лучшего UX
       await Future.delayed(const Duration(milliseconds: 500));
 
@@ -66,7 +62,6 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString('openai_api_key', apiKey);
 
-        dotenv.env['OPENAI_API_KEY'] = apiKey;
         await Future.delayed(const Duration(milliseconds: 500));
 
         _navigateToHome();
