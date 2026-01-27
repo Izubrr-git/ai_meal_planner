@@ -19,6 +19,24 @@ class MealDay {
     required this.macros,
   });
 
+  MealDay copyWith({
+    String? day,
+    String? date,
+    Map<String, Meal>? meals,
+    List<Meal>? snacks,
+    int? totalCalories,
+    Map<String, int>? macros,
+  }) {
+    return MealDay(
+      day: day ?? this.day,
+      date: date ?? this.date,
+      meals: meals ?? this.meals,
+      snacks: snacks ?? this.snacks,
+      totalCalories: totalCalories ?? this.totalCalories,
+      macros: macros ?? this.macros,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'day': day,
@@ -74,6 +92,32 @@ class MealPlan extends Equatable {
     required this.summary,
     required this.recommendations,
   });
+
+  MealPlan copyWith({
+    String? id,
+    DateTime? createdAt,
+    String? goal,
+    int? targetCalories,
+    List<String>? restrictions,
+    List<String>? allergies,
+    int? days,
+    List<MealDay>? mealDays,
+    String? summary,
+    List<String>? recommendations,
+  }) {
+    return MealPlan(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      goal: goal ?? this.goal,
+      targetCalories: targetCalories ?? this.targetCalories,
+      restrictions: restrictions ?? this.restrictions,
+      allergies: allergies ?? this.allergies,
+      days: days ?? this.days,
+      mealDays: mealDays ?? this.mealDays,
+      summary: summary ?? this.summary,
+      recommendations: recommendations ?? this.recommendations,
+    );
+  }
 
   Map<String, dynamic> toJson() {
     return {

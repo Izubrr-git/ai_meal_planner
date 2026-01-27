@@ -17,6 +17,24 @@ class Meal extends Equatable {
     required this.fat,
   });
 
+  Meal copyWith({
+    String? name,
+    String? description,
+    int? calories,
+    int? protein,
+    int? carbs,
+    int? fat,
+  }) {
+    return Meal(
+      name: name ?? this.name,
+      description: description ?? this.description,
+      calories: calories ?? this.calories,
+      protein: protein ?? this.protein,
+      carbs: carbs ?? this.carbs,
+      fat: fat ?? this.fat,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'name': name,
