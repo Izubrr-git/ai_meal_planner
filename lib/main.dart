@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'app/app.dart';
 import 'core/di/service_locator.dart';
 import 'core/constants/api_keys.dart';
 import 'features/meal_planner/presentation/screens/home_screen.dart';
@@ -11,10 +10,10 @@ import 'features/meal_planner/presentation/screens/api_key_screen.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables from assets
+  // Load environment variables
   await dotenv.load(fileName: "assets/.env");
 
-  // Initialize ApiKeys
+  // Initialize API keys
   await ApiKeys.init();
 
   // Initialize services
@@ -36,8 +35,6 @@ class MyApp extends ConsumerWidget {
 
     return MaterialApp(
       title: 'AI Meal Planner',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       debugShowCheckedModeBanner: false,
       home: apiKeyState.when(
