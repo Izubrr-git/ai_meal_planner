@@ -40,6 +40,33 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
 
   void _generatePlan() async {
     if (_formKey.currentState?.validate() ?? false) {
+      int? finalCalories;
+
+      if (_calories.isEmpty) {
+        // Рассчитать автоматически на основе предпочтений
+        final preferences = await ref.read(mealPlanProvider.notifier).loadPreferences();
+        if (preferences != null &&
+            preferences.age != null &&
+            preferences.weight != null &&
+            preferences.height != null &&
+            preferences.gender != null) {
+          finalCalories = preferences.calculateRecommendedCalories();
+
+          // Показать подсказку
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Используем рассчитанные калории: $finalCalories ккал/день'),
+                backgroundColor: Colors.blue,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+          }
+        }
+      } else {
+        finalCalories = int.tryParse(_calories);
+      }
+
       await ref.read(mealPlanProvider.notifier).generateMealPlan(
         goal: _goal,
         calories: _calories.isNotEmpty ? int.tryParse(_calories) : null,
@@ -125,7 +152,15 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
                 'Целевые калории (опционально)',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
+              Text(
+                'Оставьте пустым для автоматического расчета',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 4),
               AppTextField(
                 initialValue: _calories,
                 hintText: 'например, 2000',
@@ -136,8 +171,14 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
                 validator: (value) {
                   if (value != null && value.isNotEmpty) {
                     final calories = int.tryParse(value);
-                    if (calories == null || calories < 500 || calories > 10000) {
-                      return 'Введите число от 500 до 10000';
+                    if (calories == null) {
+                      return 'Введите число';
+                    }
+                    if (calories < 800) {
+                      return 'Минимум 800 калорий для здорового питания';
+                    }
+                    if (calories > 5000) {
+                      return 'Максимум 5000 калорий';
                     }
                   }
                   return null;
@@ -270,6 +311,7 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
                     ],
                   ),
                 ),
+
             ],
           ),
         ),
