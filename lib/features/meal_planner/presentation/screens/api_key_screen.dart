@@ -288,12 +288,11 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
             if (!_showAdvanced)
               TextButton(
                 onPressed: () {
-                  // Для тестирования можно использовать тестовый ключ
-                  _apiKeyController.text = 'sk-test-key-for-demo-only-123456';
-                  _saveApiKey();
+                  // Включаем тестовый режим
+                  _useTestMode();
                 },
                 child: const Text(
-                  'Использовать тестовый режим (без API)',
+                  'Использовать тестовый режим (демо-данные)',
                   style: TextStyle(fontSize: 12),
                 ),
               ),
@@ -330,5 +329,35 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
   void dispose() {
     _apiKeyController.dispose();
     super.dispose();
+  }
+
+  Future<void> _useTestMode() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Сохраняем флаг тестового режима
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('use_test_mode', true);
+
+      // Немного задержки для лучшего UX
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      _navigateToHome();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ошибка: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 }

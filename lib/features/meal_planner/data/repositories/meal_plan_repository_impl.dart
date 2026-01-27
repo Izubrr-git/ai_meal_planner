@@ -5,6 +5,7 @@ import '../../domain/entities/user_preferencies.dart';
 import '../../domain/repositories/meal_plan_repository.dart';
 import '../datasources/local_datasource.dart';
 import '../datasources/remote_datasource.dart';
+import 'mock_meal_plan_repository.dart';
 
 class MealPlanRepositoryImpl implements MealPlanRepository {
   final RemoteDataSource _remoteDataSource;
@@ -67,6 +68,13 @@ class MealPlanRepositoryImpl implements MealPlanRepository {
 }
 
 final mealPlanRepositoryProvider = Provider<MealPlanRepository>((ref) {
+  // Можно добавить флаг для переключения между реальным и моковым репозиторием
+  final useMock = false; // TODO: Сделать настройку
+
+  if (useMock) {
+    return MockMealPlanRepository();
+  }
+
   return MealPlanRepositoryImpl(
     remoteDataSource: ref.watch(remoteDataSourceProvider),
     localDataSource: ref.watch(localDataSourceProvider),
