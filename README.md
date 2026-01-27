@@ -23,7 +23,7 @@
 
 1. Клонируйте репозиторий:
 ```bash
-git clone https://github.com/yourusername/ai-meal-planner.git
+git clone https://github.com/izubrr-git/ai-meal-planner.git
 cd ai-meal-planner
 ```
 
