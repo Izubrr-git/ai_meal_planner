@@ -26,7 +26,7 @@ dependencies:
   go_router: ^12.0.0
 
   # UI Helpers
-  intl: ^0.18.1
+  intl: ^0.20.2
   equatable: ^2.0.5
   shimmer: ^3.0.0
 
@@ -34,7 +34,15 @@ dependencies:
   cupertino_icons: ^1.0.6
   flutter_launcher_icons: ^0.13.1
 
-  share_plus: ^7.0.0
+  share_plus: ^12.0.1
+
+  appsflyer_sdk: ^6.17.8
+  firebase_analytics: ^12.1.1
+  firebase_core: ^4.4.0
+  appmetrica_plugin: ^3.4.0
+
+  unity_levelplay_mediation: ^9.0.1
+  google_mobile_ads: ^7.0.0
 
 dev_dependencies:
   flutter_test:
