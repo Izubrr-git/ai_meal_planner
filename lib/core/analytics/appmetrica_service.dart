@@ -20,20 +20,14 @@ class AppMetricaService {
     try {
       if (_initialized) return;
 
-      // Конфигурация AppMetrica
-      final config = AppMetricaConfig(
+      const config = AppMetricaConfig(
         AnalyticsConfig.appMetricaApiKey,
         logs: kDebugMode,
         sessionTimeout: 30,
         firstActivationAsUpdate: false,
-        // Дополнительные настройки:
-        // locationTracking: false,
-        // crashReporting: true,
       );
 
       await AppMetrica.activate(config);
-
-      // Установка дополнительных параметров
       await AppMetrica.setUserProfileID('user_${DateTime.now().millisecondsSinceEpoch}');
 
       _initialized = true;
@@ -47,11 +41,9 @@ class AppMetricaService {
     try {
       if (!_initialized) await initialize();
 
-      // Для AppMetrica используйте reportEventWithMap для передачи параметров
       if (params == null) {
         await AppMetrica.reportEvent(eventName);
       } else {
-        // Безопасное преобразование типов: Map<String, dynamic> -> Map<String, Object>
         final Map<String, Object> convertedParams = params.cast<String, Object>();
         await AppMetrica.reportEventWithMap(eventName, convertedParams);
       }
@@ -62,29 +54,26 @@ class AppMetricaService {
     }
   }
 
-  // Вспомогательный метод для преобразования типов
-  Map<String, Object> _convertParams(Map<String, dynamic> params) {
-    final result = <String, Object>{};
+  // Map<String, Object> _convertParams(Map<String, dynamic> params) {
+  //   final result = <String, Object>{};
+  //
+  //   params.forEach((key, value) {
+  //     if (value != null) {
+  //       if (value is String) {
+  //         result[key] = value;
+  //       } else if (value is num) {
+  //         result[key] = value;
+  //       } else if (value is bool) {
+  //         result[key] = value;
+  //       } else {
+  //         result[key] = value.toString();
+  //       }
+  //     }
+  //   });
+  //
+  //   return result;
+  // }
 
-    params.forEach((key, value) {
-      if (value != null) {
-        // Приведение типов к допустимым для AppMetrica
-        if (value is String) {
-          result[key] = value;
-        } else if (value is num) {
-          result[key] = value;
-        } else if (value is bool) {
-          result[key] = value;
-        } else {
-          result[key] = value.toString();
-        }
-      }
-    });
-
-    return result;
-  }
-
-  // Дополнительные полезные методы
   Future<void> logRevenue({
     required double price,
     required String currency,
@@ -114,9 +103,8 @@ class AppMetricaService {
     }
   }
 
-// Пример для логирования рекламного дохода (если нужно)
   Future<void> logAdRevenue({
-    required AppMetricaAdRevenue adRevenue, // Требует создания объекта AppMetricaAdRevenue
+    required AppMetricaAdRevenue adRevenue,
   }) async {
     try {
       await AppMetrica.reportAdRevenue(adRevenue);

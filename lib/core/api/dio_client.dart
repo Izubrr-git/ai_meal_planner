@@ -8,8 +8,8 @@ final dioClientProvider = Provider<Dio>((ref) {
   final dio = Dio(
     BaseOptions(
       baseUrl: 'https://api.openai.com/v1',
-      connectTimeout: Duration(milliseconds: AppConstants.apiTimeout),
-      receiveTimeout: Duration(milliseconds: AppConstants.apiTimeout),
+      connectTimeout: const Duration(milliseconds: AppConstants.apiTimeout),
+      receiveTimeout: const Duration(milliseconds: AppConstants.apiTimeout),
       headers: {
         'Content-Type': 'application/json',
       },

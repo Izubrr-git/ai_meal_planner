@@ -1,10 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
-
 import '../ads/ad_cooldown_manager.dart';
-import '../ads/ad_manager.dart';
 import '../ads/unity_levelplay_service.dart';
 import 'analytics_config.dart';
 import 'appsflyer_service.dart';
@@ -17,7 +14,6 @@ class AnalyticsManager {
   final FirebaseAnalyticsService _firebaseAnalyticsService;
   final AdMobService _adMobService;
 
-  // 🔥 Добавляем защиту
   bool _isProcessingAd = false;
   DateTime? _lastAdShownTime;
   static const Duration _minAdInterval = Duration(seconds: 5);
@@ -36,7 +32,6 @@ class AnalyticsManager {
     debugPrint('🚀 Initializing analytics and ads...');
 
     try {
-      // ✅ Инициализируем AppsFlyer без ожидания
       unawaited(_appsFlyerService.initialize().catchError((e) {
         debugPrint('⚠️ AppsFlyer error: $e');
       }));
@@ -58,7 +53,6 @@ class AnalyticsManager {
     }
   }
 
-  // AppsFlyer методы
   Future<void> logAppsFlyerEvent(String eventName, [Map<String, dynamic>? params]) async {
     try {
       await _appsFlyerService.logEvent(eventName, params);
@@ -67,7 +61,6 @@ class AnalyticsManager {
     }
   }
 
-  // Firebase Analytics методы
   Future<void> logFirebaseEvent({
     required String name,
     Map<String, dynamic>? parameters,
@@ -90,12 +83,8 @@ class AnalyticsManager {
     }
   }
 
-  // AdMob методы
   Future<bool> showInterstitialAd() async {
     try {
-      // 🔥 MEDIATION WATERFALL 🔥
-
-      // 1. Сначала пробуем Unity LevelPlay (бывший ironSource)
       try {
         final unityService = UnityLevelPlayService();
         if (await unityService.isInterstitialReady()) {
@@ -106,8 +95,6 @@ class AnalyticsManager {
       } catch (e) {
         debugPrint('⚠️ Unity LevelPlay failed: $e');
       }
-
-      // 2. Fallback на AdMob
       debugPrint('🔄 Falling back to AdMob interstitial');
       return await _adMobService.showInterstitialAd();
 
@@ -140,11 +127,10 @@ class AnalyticsManager {
       return _adMobService.getBannerAd();
     } catch (e) {
       debugPrint('❌ Error getting banner ad: $e');
-      return Container(); // Возвращаем пустой контейнер при ошибке
+      return Container();
     }
   }
 
-  // Комбинированные методы для логирования событий
   Future<void> logPlanGenerated({
     required String goal,
     required int days,
@@ -162,14 +148,12 @@ class AnalyticsManager {
     };
 
     try {
-      // Логируем в аналитику
       unawaited(_appsFlyerService.logEvent(AnalyticsConfig.eventPlanGenerated, eventData));
       unawaited(_firebaseAnalyticsService.logEvent(
         name: AnalyticsConfig.eventPlanGenerated,
         parameters: eventData,
       ));
 
-      // Показываем интерстишиал (без ожидания)
       unawaited(showInterstitialWithCooldown());
 
     } catch (e) {
@@ -190,7 +174,6 @@ class AnalyticsManager {
     };
 
     try {
-      // Запускаем оба лога параллельно
       unawaited(_appsFlyerService.logEvent(AnalyticsConfig.eventPlanShared, eventData));
       unawaited(_firebaseAnalyticsService.logEvent(
         name: AnalyticsConfig.eventPlanShared,
@@ -204,13 +187,11 @@ class AnalyticsManager {
   final AdCooldownManager _adCooldownManager = AdCooldownManager();
 
   Future<bool> showInterstitialWithCooldown() async {
-    // Защита от одновременных вызовов
     if (_isProcessingAd) {
       debugPrint('⚠️ Ad is already being processed');
       return false;
     }
 
-    // Проверяем минимальный интервал
     if (_lastAdShownTime != null) {
       final timeSinceLastAd = DateTime.now().difference(_lastAdShownTime!);
       if (timeSinceLastAd < _minAdInterval) {

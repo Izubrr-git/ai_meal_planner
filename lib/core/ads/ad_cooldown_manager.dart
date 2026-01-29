@@ -6,18 +6,16 @@ class AdCooldownManager {
 
   static const Duration interstitialCooldown = Duration(seconds: 30);
   DateTime? _lastInterstitialShown;
-  bool _isShowingAd = false; // 🔥 Ключевое исправление!
+  bool _isShowingAd = false;
 
   AdCooldownManager._internal();
 
   Future<bool> canShowInterstitial() async {
-    // Если уже показываем рекламу - ждем
     if (_isShowingAd) {
       debugPrint('⏳ Ad is already being shown, skipping');
       return false;
     }
 
-    // Проверяем таймаут 30 секунд
     if (_lastInterstitialShown != null) {
       final now = DateTime.now();
       final timeSinceLastAd = now.difference(_lastInterstitialShown!);

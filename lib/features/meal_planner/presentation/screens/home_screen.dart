@@ -61,7 +61,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AdNavigationMixin 
     }
   }
 
-  // Использование:
   void _navigateToSettings() => _navigateWithAd(const SettingsScreen());
   void _navigateToHistory() => _navigateWithAd(const HistoryScreen());
   void _navigateToGenerator() => _navigateWithAd(
@@ -169,24 +168,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with AdNavigationMixin 
                         children: [
                           Chip(
                             label: Text(_userPreferences!.goal),
-                            backgroundColor: Colors.green.withOpacity(0.1),
+                            backgroundColor: Colors.green.withValues(alpha: 0.1),
                           ),
                           if (_userPreferences!.targetCalories != null)
                             Chip(
                               label: Text('${_userPreferences!.targetCalories} ккал'),
-                              backgroundColor: Colors.blue.withOpacity(0.1),
+                              backgroundColor: Colors.blue.withValues(alpha: 0.1),
                             ),
                           ..._userPreferences!.restrictions
                               .where((r) => r != 'Без ограничений')
                               .map((restriction) => Chip(
                             label: Text(restriction),
-                            backgroundColor: Colors.orange.withOpacity(0.1),
+                            backgroundColor: Colors.orange.withValues(alpha: 0.1),
                           )),
                           ..._userPreferences!.allergies
                               .where((a) => a != 'Нет')
                               .map((allergy) => Chip(
                             label: Text(allergy),
-                            backgroundColor: Colors.red.withOpacity(0.1),
+                            backgroundColor: Colors.red.withValues(alpha: 0.1),
                           )),
                         ],
                       ),

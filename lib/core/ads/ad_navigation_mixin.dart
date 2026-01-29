@@ -4,14 +4,13 @@ import '../analytics/analytics_manager.dart';
 
 mixin AdNavigationMixin<T extends StatefulWidget> on State<T> {
   final AnalyticsManager _analytics = AnalyticsManager();
-  bool _isNavigating = false; // Защита от рекурсии
+  bool _isNavigating = false;
 
   Future<void> navigateWithAd(Widget page) async {
-    if (_isNavigating) return; // Уже в процессе навигации
+    if (_isNavigating) return;
     _isNavigating = true;
 
     try {
-      // Показываем рекламу ОДИН раз
       await _analytics.showInterstitialWithCooldown();
 
       if (mounted) {

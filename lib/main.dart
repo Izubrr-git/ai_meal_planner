@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,20 +12,16 @@ import 'features/meal_planner/presentation/screens/home_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Инициализируем API ключи
   await ApiKeys.init();
 
-  // Инициализируем сервисы
   await ServiceLocator.init();
 
-  // ✅ Инициализируем SharedPreferences
   await SharedPreferences.getInstance();
 
-  // ✅ Инициализируем аналитику (в фоне)
   unawaited(AnalyticsManager().initialize());
 
   runApp(
-    ProviderScope(  // ✅ ProviderScope уже здесь
+    ProviderScope(
       child: MyApp(),
     ),
   );
@@ -45,7 +40,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Откладываем показ App Open Ad на 3 секунды после запуска
     Future.delayed(const Duration(seconds: 3), () {
       _showAppOpenAdSafely();
     });
@@ -55,9 +49,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     try {
       final now = DateTime.now();
 
-      // Проверяем время с момента запуска приложения
       final timeSinceStart = now.difference(_appStartTime);
-      if (timeSinceStart < Duration(seconds: 2)) {
+      if (timeSinceStart < const Duration(seconds: 2)) {
         debugPrint('⏳ Waiting for app to stabilize');
         return;
       }
@@ -71,30 +64,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      // При возврате в приложение ждем 5 секунд
+
       Future.delayed(const Duration(seconds: 5), () {
         _showAppOpenAdSafely();
       });
     }
   }
 
-  // Добавьте в класс:
-  DateTime _appStartTime = DateTime.now();
-
-  Future<void> _showAppOpenAdIfSafe() async {
-    try {
-      // Проверяем, что не было рекламы в последние 5 секунд
-      final analytics = AnalyticsManager();
-
-      // Ждем 500мс для стабильности
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      // Показываем App Open Ad
-      await analytics.showAppOpenAd();
-    } catch (e) {
-      debugPrint('❌ Error showing app open ad: $e');
-    }
-  }
+  final DateTime _appStartTime = DateTime.now();
 
   @override
   void dispose() {
@@ -111,7 +88,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         primarySwatch: Colors.green,
         useMaterial3: true,
       ),
-      home: HomeScreen(), // Ваш главный экран
+      home: HomeScreen(),
       debugShowCheckedModeBanner: false,
     );
   }

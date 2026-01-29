@@ -12,13 +12,13 @@ class AnalyticsConfig {
   static const String admobAppOpenId = 'ca-app-pub-3940256099942544/9257395921';
   static const String admobNativeId = 'ca-app-pub-3940256099942544/2247696110';
 
-  // Unity LevelPlay (бывший IronSource)
+  // Unity LevelPlay (IronSource)
   static const String unityLevelPlayAppKey = '2513e5d55';
 
   // AppMetrica
   static const String appMetricaApiKey = '49d30a02-e2d6-4e8f-85bf-80a3fc80265e';
 
-  // ATT время ожидания (в секундах)
+  // ATT
   static const int attWaitingTime = 30;
 
   // Events

@@ -2,8 +2,6 @@ import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 
-import 'analytics_config.dart';
-
 class FirebaseAnalyticsService {
   static FirebaseAnalyticsService? _instance;
   late FirebaseAnalytics _analytics;
@@ -23,7 +21,6 @@ class FirebaseAnalyticsService {
       await Firebase.initializeApp();
       _analytics = FirebaseAnalytics.instance;
 
-      // Настраиваем параметры аналитики
       await _analytics.setAnalyticsCollectionEnabled(true);
       await _analytics.setUserId(id: await _getUserId());
       await _analytics.setUserProperty(name: 'app_version', value: '1.0.0');
@@ -36,8 +33,6 @@ class FirebaseAnalyticsService {
   }
 
   Future<String> _getUserId() async {
-    // Генерируем или получаем ID пользователя
-    // В реальном приложении используйте уникальный ID пользователя
     return 'user_${DateTime.now().millisecondsSinceEpoch}';
   }
 
@@ -48,13 +43,9 @@ class FirebaseAnalyticsService {
     try {
       if (!_initialized) await initialize();
 
-      // Безопасное преобразование с проверкой на null
       Map<String, Object>? firebaseParams;
       if (parameters != null) {
-        // Метод .cast() создает Map<String, Object> "представление"
         firebaseParams = parameters.cast<String, Object>();
-        // Альтернатива: создать новую мапу
-        // firebaseParams = Map<String, Object>.from(parameters);
       }
 
       await _analytics.logEvent(

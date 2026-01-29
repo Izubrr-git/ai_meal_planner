@@ -26,18 +26,14 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
   }
 
   Future<void> _tryAutoDetectKey() async {
-    // Проверяем, может ключ уже сохранен
     final prefs = await SharedPreferences.getInstance();
     final storedKey = prefs.getString('openai_api_key');
 
     if (storedKey != null && storedKey.isNotEmpty) {
-      // Если ключ есть, автоматически используем его
       _apiKeyController.text = storedKey;
 
-      // Немного задержки для лучшего UX
       await Future.delayed(const Duration(milliseconds: 500));
 
-      // Переходим на главный экран
       _navigateToHome();
     }
   }
@@ -46,7 +42,7 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const HomeScreen()),
-          (route) => false, // Удаляем все предыдущие роуты
+          (route) => false,
     );
   }
 
@@ -272,11 +268,10 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
 
             const SizedBox(height: 32),
 
-            // Test mode option (для разработки)
+            // Test mode option
             if (!_showAdvanced)
               TextButton(
                 onPressed: () {
-                  // Включаем тестовый режим
                   _useTestMode();
                 },
                 child: const Text(
@@ -325,10 +320,9 @@ class _ApiKeyScreenState extends ConsumerState<ApiKeyScreen> {
     });
 
     try {
-      // Немного задержки для лучшего UX
       await Future.delayed(const Duration(milliseconds: 500));
 
-      _navigateToHome(); // Используем исправленный метод
+      _navigateToHome();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

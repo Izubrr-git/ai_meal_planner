@@ -1,4 +1,3 @@
-import '../../domain/entities/meal.dart';
 import '../../domain/entities/meal_plan.dart';
 
 class MealPlanModel {

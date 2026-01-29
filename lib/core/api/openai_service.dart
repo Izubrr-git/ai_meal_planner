@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,13 +19,11 @@ class OpenAIService {
     required int days,
   }) async {
     try {
-      // ДЕБАГ: Проверяем что получаем
       print('🔑 Checking API key...');
 
       final apiKey = ApiKeys.openAIKey;
       print('🔑 API Key: ${apiKey?.substring(0, 10)}...');
 
-      // Если ключ не настроен - ВСЕГДА используем моки
       if (apiKey == null ||
           apiKey.isEmpty ||
           apiKey == 'your_openai_api_key_here' ||
@@ -41,7 +38,6 @@ class OpenAIService {
         );
       }
 
-      // Только если есть реальный ключ - делаем API запрос
       print('🚀 Making real API call with OpenAI');
 
       final prompt = _buildPrompt(
@@ -93,7 +89,6 @@ class OpenAIService {
         throw ApiException('Нет подключения к интернету');
       }
 
-      // OpenAI specific errors
       if (e.response?.statusCode == 401) {
         throw ApiException('Неверный API ключ. Проверьте ключ в настройках.');
       } else if (e.response?.statusCode == 429) {
@@ -102,7 +97,6 @@ class OpenAIService {
         throw ApiException('Ошибка сервера OpenAI. Попробуйте позже.');
       }
 
-      // При ЛЮБОЙ ошибке возвращаем моки
       print('🔄 Falling back to mock data due to error');
       return _generateMockResponse(
         goal: goal,
@@ -113,7 +107,6 @@ class OpenAIService {
       );
     } catch (e) {
       print('❌ Unexpected error: $e');
-      // При ЛЮБОЙ ошибке возвращаем моки
       return _generateMockResponse(
         goal: goal,
         calories: calories,
@@ -178,7 +171,6 @@ class OpenAIService {
     return 'дней';
   }
 
-  // ДОБАВЛЕННЫЙ МЕТОД - БЫЛ ОТСУТСТВОВАЛ
   String _generateMockResponse({
     required String goal,
     int? calories,
@@ -186,7 +178,6 @@ class OpenAIService {
     required List<String> allergies,
     required int days,
   }) {
-    // Генерируем несколько дней
     final mockDays = List.generate(days, (index) {
       final dayNum = index + 1;
       final totalCalories = 1400 + (index * 100);
@@ -241,21 +232,20 @@ class OpenAIService {
     }).join(',');
 
     return '''
-{
-  "days": [$mockDays],
-  "summary": "План питания для цели '$goal'. ${calories != null ? 'Целевые калории: $calories.' : ''} Учтены ограничения: ${restrictions.join(', ')}. Аллергии: ${allergies.join(', ')}. Это демо-режим, для реальных данных настройте API ключ.",
-  "recommendations": [
-    "Пейте 2-2.5 литра воды в день",
-    "Соблюдайте режим питания",
-    "Комбинируйте белковые и углеводные приемы пищи",
-    "Избегайте поздних ужинов",
-    "Добавьте физическую активность"
-  ]
-}
-''';
+  {
+    "days": [$mockDays],
+    "summary": "План питания для цели '$goal'. ${calories != null ? 'Целевые калории: $calories.' : ''} Учтены ограничения: ${restrictions.join(', ')}. Аллергии: ${allergies.join(', ')}. Это демо-режим, для реальных данных настройте API ключ.",
+    "recommendations": [
+      "Пейте 2-2.5 литра воды в день",
+      "Соблюдайте режим питания",
+      "Комбинируйте белковые и углеводные приемы пищи",
+      "Избегайте поздних ужинов",
+      "Добавьте физическую активность"
+    ]
+  }
+  ''';
   }
 
-  // Вспомогательные методы для генерации разнообразных моковых данных
   String _getWeekday(int dayOffset) {
     final weekdays = ['Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота', 'Воскресенье'];
     final today = DateTime.now().weekday - 1; // 0-based

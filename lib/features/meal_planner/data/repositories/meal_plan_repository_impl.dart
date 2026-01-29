@@ -5,7 +5,6 @@ import '../../domain/entities/user_preferencies.dart';
 import '../../domain/repositories/meal_plan_repository.dart';
 import '../datasources/local_datasource.dart';
 import '../datasources/remote_datasource.dart';
-import 'mock_meal_plan_repository.dart';
 
 class MealPlanRepositoryImpl implements MealPlanRepository {
   final RemoteDataSource _remoteDataSource;

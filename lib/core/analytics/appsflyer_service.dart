@@ -3,7 +3,6 @@ import 'package:apphud/models/apphud_models/apphud_attribution_data.dart';
 import 'package:apphud/models/apphud_models/apphud_attribution_provider.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:apphud/apphud.dart';
 
 import 'analytics_config.dart';
@@ -25,7 +24,6 @@ class AppsFlyerService {
     try {
       if (_initialized) return;
 
-      // Инициализируем AppHud ПЕРВЫМ делом
       await Apphud.start(apiKey: 'app_5z29xuZvQgGu95Yo8oVWVzmoRJLzAN');
 
       final options = {
@@ -40,14 +38,12 @@ class AppsFlyerService {
 
       _appsflyerSdk = AppsflyerSdk(options);
 
-      // Инициализация SDK
       await _appsflyerSdk.initSdk(
         registerConversionDataCallback: true,
         registerOnAppOpenAttributionCallback: true,
         registerOnDeepLinkingCallback: true,
       );
 
-      // Устанавливаем коллбэки для конверсий
       _appsflyerSdk.onInstallConversionData((data) {
         debugPrint('AppsFlyer Conversion Data: $data');
         _sendConversionToAppHud(data);
@@ -95,7 +91,6 @@ class AppsFlyerService {
     if (_startSdkCompleter == null) {
       _startSdkCompleter = Completer<void>();
 
-      // Таймаут 5 секунд
       Future.delayed(const Duration(seconds: 5), () {
         if (!_startSdkCompleter!.isCompleted) {
           _startSdkCompleter!.complete();
@@ -116,7 +111,6 @@ class AppsFlyerService {
       final uid = await _appsflyerSdk.getAppsFlyerUID();
 
       if (uid != null && uid.isNotEmpty) {
-        // Создаем объект атрибуции
         final attributionData = ApphudAttributionData(
           rawData: conversionData.cast<String, dynamic>(),
           adNetwork: conversionData['media_source']?.toString(),
@@ -127,7 +121,6 @@ class AppsFlyerService {
           keyword: conversionData['keyword']?.toString(),
         );
 
-        // Передаем атрибуцию в AppHud
         await Apphud.setAttribution(
           provider: ApphudAttributionProvider.appsFlyer,
           identifier: uid,
@@ -147,7 +140,6 @@ class AppsFlyerService {
         await initialize();
       }
 
-      // Ждем успешного старта SDK
       await waitForStart();
 
       await _appsflyerSdk.logEvent(

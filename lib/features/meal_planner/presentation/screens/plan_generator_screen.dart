@@ -56,7 +56,6 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
       return;
     }
 
-    // ✅ Сохраняем настройки
     await ref.read(mealPlanProvider.notifier).savePreferences(
       UserPreferences(
         goal: _goal,
@@ -66,7 +65,6 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
       ),
     );
 
-    // 📊 Аналитика (включает показ рекламы внутри logPlanGenerated)
     AnalyticsManager().logPlanGenerated(
       goal: _goal,
       days: _days,
@@ -75,12 +73,10 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
       allergies: _selectedAllergies,
     );
 
-    // Минимальная задержка перед навигацией
     await Future.delayed(const Duration(milliseconds: 300));
 
     if (!mounted) return;
 
-    // ➡️ Навигация
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -114,7 +110,7 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _goal,
+                initialValue: _goal,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Выберите цель',

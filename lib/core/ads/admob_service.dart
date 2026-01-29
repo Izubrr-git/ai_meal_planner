@@ -9,11 +9,8 @@ import '../analytics/firebase_analytics_service.dart';
 class AdMobService {
   static AdMobService? _instance;
   bool _initialized = false;
-
-  // 🔥 Добавляем эту переменную
   bool _isShowingAnyAd = false;
 
-  // Рекламные блоки
   BannerAd? _bannerAd;
   InterstitialAd? _interstitialAd;
   RewardedAd? _rewardedAd;
@@ -33,16 +30,9 @@ class AdMobService {
 
       await MobileAds.instance.initialize();
 
-      // Настраиваем запрос на рекламу
-      final request = AdRequest(
-        keywords: ['food', 'nutrition', 'health', 'fitness'],
-        contentUrl: 'https://aimealplanner.com',
-      );
-
       _initialized = true;
       debugPrint('✅ AdMob initialized successfully');
 
-      // Предзагружаем рекламу
       _preloadAds();
     } catch (e) {
       debugPrint('❌ AdMob initialization error: $e');
@@ -74,13 +64,13 @@ class AdMobService {
               },
               onAdDismissedFullScreenContent: (ad) {
                 _isShowingAnyAd = false;
-                _lastAdClosedTime = DateTime.now(); // 🔥 ЗДЕСЬ
+                _lastAdClosedTime = DateTime.now();
                 ad.dispose();
                 _loadInterstitialAd();
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
                 _isShowingAnyAd = false;
-                _lastAdClosedTime = DateTime.now(); // 🔥 И ЗДЕСЬ
+                _lastAdClosedTime = DateTime.now();
                 ad.dispose();
                 _loadInterstitialAd();
               },
@@ -116,13 +106,13 @@ class AdMobService {
               },
               onAdDismissedFullScreenContent: (ad) {
                 _isShowingAnyAd = false;
-                _lastAdClosedTime = DateTime.now(); // 🔥 ЗДЕСЬ
+                _lastAdClosedTime = DateTime.now();
                 ad.dispose();
                 _loadRewardedAd();
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
                 _isShowingAnyAd = false;
-                _lastAdClosedTime = DateTime.now(); // 🔥 И ЗДЕСЬ
+                _lastAdClosedTime = DateTime.now();
                 ad.dispose();
                 _loadRewardedAd();
               },
@@ -158,13 +148,13 @@ class AdMobService {
               },
               onAdDismissedFullScreenContent: (ad) {
                 _isShowingAnyAd = false;
-                _lastAdClosedTime = DateTime.now(); // 🔥 ЗДЕСЬ
+                _lastAdClosedTime = DateTime.now();
                 ad.dispose();
                 _loadAppOpenAd();
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
                 _isShowingAnyAd = false;
-                _lastAdClosedTime = DateTime.now(); // 🔥 И ЗДЕСЬ
+                _lastAdClosedTime = DateTime.now();
                 ad.dispose();
                 _loadAppOpenAd();
               },
@@ -206,10 +196,8 @@ class AdMobService {
     );
   }
 
-  // Методы для показа рекламы
   Future<bool> showInterstitialAd() async {
     try {
-      // Проверяем, не показывается ли уже реклама
       if (_isShowingAnyAd) {
         debugPrint('⚠️ Already showing an ad, skipping interstitial');
         return false;
@@ -258,16 +246,14 @@ class AdMobService {
 
   Future<bool> showAppOpenAd() async {
     try {
-      // Проверяем, что не показывается другая реклама
       if (_isShowingAnyAd) {
         debugPrint('⚠️ Already showing an ad, skipping app open');
         return false;
       }
 
-      // 🔥 Проверяем, что не было рекламы в последние 30 секунд
       if (_lastAdClosedTime != null) {
         final timeSinceLastAd = DateTime.now().difference(_lastAdClosedTime!);
-        if (timeSinceLastAd < Duration(seconds: 30)) {
+        if (timeSinceLastAd < const Duration(seconds: 30)) {
           debugPrint('⏳ Too soon after last ad for app open (${timeSinceLastAd.inSeconds}s ago)');
           return false;
         }
@@ -287,7 +273,6 @@ class AdMobService {
     }
   }
 
-  // Добавьте переменную в класс:
   DateTime? _lastAdClosedTime;
 
   Widget getBannerAd() {

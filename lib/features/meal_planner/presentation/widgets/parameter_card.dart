@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/entities/meal_plan.dart';
 
-/// Карточка параметра плана питания
 class ParameterCard extends StatelessWidget {
   final String title;
   final String value;
@@ -39,11 +38,11 @@ class ParameterCard extends StatelessWidget {
           color: cardColor,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.1),
+            color: theme.colorScheme.outline.withValues(alpha: 0.1),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -60,7 +59,7 @@ class ParameterCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: iconColor ?? theme.colorScheme.primary.withOpacity(0.1),
+                      color: iconColor ?? theme.colorScheme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -89,7 +88,7 @@ class ParameterCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Divider(
                   height: 1,
-                  color: theme.colorScheme.outline.withOpacity(0.1),
+                  color: theme.colorScheme.outline.withValues(alpha: 0.1),
                 ),
                 const SizedBox(height: 12),
               ] else
@@ -100,7 +99,7 @@ class ParameterCard extends StatelessWidget {
                 value,
                 style: theme.textTheme.bodyLarge?.copyWith(
                   fontWeight: FontWeight.w500,
-                  color: textColor.withOpacity(0.9),
+                  color: textColor.withValues(alpha: 0.9),
                 ),
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
@@ -314,7 +313,6 @@ class MacrosParameterCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final totalGrams = protein + carbs + fat;
     final double proteinPercentage = (protein * 4 * 100 / calories).clamp(0, 100);
     final double carbsPercentage = (carbs * 4 * 100 / calories).clamp(0, 100);
@@ -443,7 +441,7 @@ class MacrosParameterCard extends ConsumerWidget {
         const SizedBox(height: 4),
         LinearProgressIndicator(
           value: percentage / 100,
-          backgroundColor: color.withOpacity(0.2),
+          backgroundColor: color.withValues(alpha: 0.2),
           valueColor: AlwaysStoppedAnimation<Color>(color),
           minHeight: 6,
           borderRadius: BorderRadius.circular(3),
@@ -474,15 +472,15 @@ class PlanSummaryCard extends StatelessWidget {
           (sum, day) => sum + (day.macros['protein'] ?? 0),
     ) ~/ plan.days;
 
-    final avgCarbs = plan.mealDays.fold(
-      0,
-          (sum, day) => sum + (day.macros['carbs'] ?? 0),
-    ) ~/ plan.days;
-
-    final avgFat = plan.mealDays.fold(
-      0,
-          (sum, day) => sum + (day.macros['fat'] ?? 0),
-    ) ~/ plan.days;
+    // final avgCarbs = plan.mealDays.fold(
+    //   0,
+    //       (sum, day) => sum + (day.macros['carbs'] ?? 0),
+    // ) ~/ plan.days;
+    //
+    // final avgFat = plan.mealDays.fold(
+    //   0,
+    //       (sum, day) => sum + (day.macros['fat'] ?? 0),
+    // ) ~/ plan.days;
 
     return Container(
       decoration: BoxDecoration(
@@ -490,14 +488,14 @@ class PlanSummaryCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.8),
-            Theme.of(context).colorScheme.secondary.withOpacity(0.8),
+            Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
+            Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -510,7 +508,7 @@ class PlanSummaryCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(
+                const Icon(
                   Icons.assignment,
                   color: Colors.white,
                   size: 24,
@@ -542,7 +540,7 @@ class PlanSummaryCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -580,7 +578,7 @@ class PlanSummaryCard extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 12,
           ),
         ),

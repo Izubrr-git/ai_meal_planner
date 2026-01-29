@@ -2,8 +2,7 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    // ИЗМЕНИ ЭТУ СТРОКУ:
-    id("com.google.gms.google-services") // без version и apply false
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -38,13 +37,8 @@ android {
 flutter {
     source = "../.."
 }
-
-// ✅ ДОБАВЬТЕ ЭТИ ЗАВИСИМОСТИ
 dependencies {
-    // Для AdMob
     implementation("com.google.android.gms:play-services-ads:23.0.0")
-
-    // Для Firebase (если используете)
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-analytics")
 }
