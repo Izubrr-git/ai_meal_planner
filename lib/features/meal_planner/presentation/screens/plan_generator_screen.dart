@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/analytics/analytics_manager.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/app_text_field.dart';
@@ -39,65 +40,57 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
   }
 
   void _generatePlan() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      int? finalCalories;
+    if (!(_formKey.currentState?.validate() ?? false)) return;
 
-      if (_calories.isEmpty) {
-        // Рассчитать автоматически на основе предпочтений
-        final preferences = await ref.read(mealPlanProvider.notifier).loadPreferences();
-        if (preferences != null &&
-            preferences.age != null &&
-            preferences.weight != null &&
-            preferences.height != null &&
-            preferences.gender != null) {
-          finalCalories = preferences.calculateRecommendedCalories();
+    await ref.read(mealPlanProvider.notifier).generateMealPlan(
+      goal: _goal,
+      calories: _calories.isNotEmpty ? int.tryParse(_calories) : null,
+      restrictions: _selectedRestrictions,
+      allergies: _selectedAllergies,
+      days: _days,
+    );
 
-          // Показать подсказку
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Используем рассчитанные калории: $finalCalories ккал/день'),
-                backgroundColor: Colors.blue,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          }
-        }
-      } else {
-        finalCalories = int.tryParse(_calories);
-      }
+    final state = ref.read(mealPlanProvider);
 
-      await ref.read(mealPlanProvider.notifier).generateMealPlan(
+    if (state.currentPlan == null || state.error != null) {
+      return; // ❌ ошибка — рекламы нет
+    }
+
+    // ✅ Сохраняем настройки
+    await ref.read(mealPlanProvider.notifier).savePreferences(
+      UserPreferences(
         goal: _goal,
-        calories: _calories.isNotEmpty ? int.tryParse(_calories) : null,
+        targetCalories: _calories.isNotEmpty ? int.tryParse(_calories) : null,
         restrictions: _selectedRestrictions,
         allergies: _selectedAllergies,
-        days: _days,
-      );
+      ),
+    );
 
-      final state = ref.read(mealPlanProvider);
+    // 📊 Аналитика
+    AnalyticsManager().logPlanGenerated(
+      goal: _goal,
+      days: _days,
+      calories: _calories.isNotEmpty ? int.tryParse(_calories) : null,
+      restrictions: _selectedRestrictions,
+      allergies: _selectedAllergies,
+    );
 
-      if (state.currentPlan != null && state.error == null) {
-        // Save preferences
-        await ref.read(mealPlanProvider.notifier).savePreferences(
-          UserPreferences(
-            goal: _goal,
-            targetCalories: _calories.isNotEmpty ? int.tryParse(_calories) : null,
-            restrictions: _selectedRestrictions,
-            allergies: _selectedAllergies,
-          ),
-        );
+    // 📢 Реклама — ВАЖНО: await
+    await AnalyticsManager().showInterstitialAd();
 
-        // Navigate to result
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MealPlanDetailScreen(plan: state.currentPlan!),
-          ),
-        );
-      }
-    }
+    if (!mounted) return;
+
+    // ➡️ Навигация ПОСЛЕ рекламы
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MealPlanDetailScreen(
+          plan: state.currentPlan!,
+        ),
+      ),
+    );
   }
+
 
   @override
   Widget build(BuildContext context) {

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/error_widget.dart';
+import '../../../../core/analytics/analytics_manager.dart';
 import '../../domain/entities/user_preferencies.dart';
 import '../providers/meal_plan_provider.dart';
 import '../widgets/meal_card.dart';
@@ -137,6 +138,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onPressed: _quickGenerate,
                       text: 'Быстрая генерация',
                     ),
+                    const SizedBox(height: 24),
+                    AnalyticsManager().getBannerAd(),
                   ],
                 ),
               ),

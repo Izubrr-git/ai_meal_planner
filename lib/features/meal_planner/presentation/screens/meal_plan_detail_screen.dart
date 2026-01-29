@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../core/analytics/analytics_manager.dart';
 import '../../domain/entities/meal.dart';
 import '../../domain/entities/meal_plan.dart';
 
@@ -315,7 +316,14 @@ class MealPlanDetailScreen extends StatelessWidget {
       ''',
       subject: 'Мой план питания на ${plan.days} дней',
     );
+
+    AnalyticsManager().logPlanShared(
+      shareType: 'full_plan',
+      days: plan.days,
+      goal: plan.goal,
+    );
   }
+
   void _shareDay(MealDay day) {
     Share.share(
       '''
@@ -347,5 +355,12 @@ class MealPlanDetailScreen extends StatelessWidget {
       ''',
       subject: 'План питания на ${day.day}',
     );
+
+    AnalyticsManager().logPlanShared(
+      shareType: 'day',
+      days: plan.days,
+      goal: plan.goal,
+    );
   }
+
 }

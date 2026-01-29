@@ -1,70 +1,83 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:async';
 
-import 'core/di/service_locator.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'core/analytics/analytics_manager.dart';
+import 'app/app.dart';
 import 'core/constants/api_keys.dart';
+import 'core/di/service_locator.dart';
 import 'features/meal_planner/presentation/screens/home_screen.dart';
-import 'features/meal_planner/presentation/screens/api_key_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize API keys
+  // Инициализируем API ключи
   await ApiKeys.init();
 
-  // Initialize services
+  // Инициализируем сервисы
   await ServiceLocator.init();
 
+  // ✅ Инициализируем SharedPreferences
+  await SharedPreferences.getInstance();
+
+  // ✅ Инициализируем аналитику (в фоне)
+  unawaited(AnalyticsManager().initialize());
+
   runApp(
-    const ProviderScope(
+    ProviderScope(  // ✅ ProviderScope уже здесь
       child: MyApp(),
     ),
   );
 }
 
-class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
-
+class MyApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final apiKeyState = ref.watch(apiKeyConfiguredProvider);
-
-    return MaterialApp(
-      title: 'AI Meal Planner',
-      themeMode: ThemeMode.system,
-      debugShowCheckedModeBanner: false,
-      home: apiKeyState.when(
-        data: (isConfigured) => isConfigured ? const HomeScreen() : const ApiKeyScreen(),
-        loading: () => const _SplashScreen(),
-        error: (error, stack) => const ApiKeyScreen(),
-      ),
-    );
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  final AnalyticsManager _analyticsManager = AnalyticsManager();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // Показываем рекламу при открытии приложения
+    _showAppOpenAd();
+  }
+
+  Future<void> _showAppOpenAd() async {
+    await Future.delayed(const Duration(seconds: 1));
+    await _analyticsManager.showAppOpenAd();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _analyticsManager.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _showAppOpenAd();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Проверка настроек...',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
-        ),
+    return MaterialApp(
+      title: AppConfig.appName,
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        useMaterial3: true,
       ),
+      home: HomeScreen(), // Ваш главный экран
+      debugShowCheckedModeBanner: false,
     );
   }
 }
