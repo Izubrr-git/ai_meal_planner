@@ -53,7 +53,7 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
     final state = ref.read(mealPlanProvider);
 
     if (state.currentPlan == null || state.error != null) {
-      return; // ❌ ошибка — рекламы нет
+      return;
     }
 
     // ✅ Сохраняем настройки
@@ -66,7 +66,7 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
       ),
     );
 
-    // 📊 Аналитика
+    // 📊 Аналитика (включает показ рекламы внутри logPlanGenerated)
     AnalyticsManager().logPlanGenerated(
       goal: _goal,
       days: _days,
@@ -75,12 +75,12 @@ class _PlanGeneratorScreenState extends ConsumerState<PlanGeneratorScreen> {
       allergies: _selectedAllergies,
     );
 
-    // 📢 Реклама — ВАЖНО: await
-    await AnalyticsManager().showInterstitialAd();
+    // Минимальная задержка перед навигацией
+    await Future.delayed(const Duration(milliseconds: 300));
 
     if (!mounted) return;
 
-    // ➡️ Навигация ПОСЛЕ рекламы
+    // ➡️ Навигация
     Navigator.push(
       context,
       MaterialPageRoute(

@@ -40,6 +40,7 @@ dependencies:
   firebase_analytics: ^12.1.1
   firebase_core: ^4.4.0
   appmetrica_plugin: ^3.4.0
+  apphud: ^3.0.1
 
   unity_levelplay_mediation: ^9.0.1
   google_mobile_ads: ^7.0.0

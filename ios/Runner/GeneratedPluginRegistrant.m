@@ -6,6 +6,12 @@
 
 #import "GeneratedPluginRegistrant.h"
 
+#if __has_include(<apphud/ApphudPlugin.h>)
+#import <apphud/ApphudPlugin.h>
+#else
+@import apphud;
+#endif
+
 #if __has_include(<appmetrica_plugin/AMAFAppMetricaPlugin.h>)
 #import <appmetrica_plugin/AMAFAppMetricaPlugin.h>
 #else
@@ -63,6 +69,7 @@
 @implementation GeneratedPluginRegistrant
 
 + (void)registerWithRegistry:(NSObject<FlutterPluginRegistry>*)registry {
+  [ApphudPlugin registerWithRegistrar:[registry registrarForPlugin:@"ApphudPlugin"]];
   [AMAFAppMetricaPlugin registerWithRegistrar:[registry registrarForPlugin:@"AMAFAppMetricaPlugin"]];
   [AppsflyerSdkPlugin registerWithRegistrar:[registry registrarForPlugin:@"AppsflyerSdkPlugin"]];
   [FirebaseAnalyticsPlugin registerWithRegistrar:[registry registrarForPlugin:@"FirebaseAnalyticsPlugin"]];

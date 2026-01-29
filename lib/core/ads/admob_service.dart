@@ -10,6 +10,9 @@ class AdMobService {
   static AdMobService? _instance;
   bool _initialized = false;
 
+  // 🔥 Добавляем эту переменную
+  bool _isShowingAnyAd = false;
+
   // Рекламные блоки
   BannerAd? _bannerAd;
   InterstitialAd? _interstitialAd;
@@ -61,25 +64,27 @@ class AdMobService {
           onAdLoaded: (ad) {
             _interstitialAd = ad;
 
-            // Устанавливаем обработчики событий
             ad.fullScreenContentCallback = FullScreenContentCallback(
               onAdShowedFullScreenContent: (ad) {
                 _logAdImpression('interstitial');
+                _isShowingAnyAd = true;
               },
               onAdClicked: (ad) {
                 _logAdClick('interstitial');
               },
               onAdDismissedFullScreenContent: (ad) {
+                _isShowingAnyAd = false;
+                _lastAdClosedTime = DateTime.now(); // 🔥 ЗДЕСЬ
                 ad.dispose();
-                _loadInterstitialAd(); // Загружаем следующий
+                _loadInterstitialAd();
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
+                _isShowingAnyAd = false;
+                _lastAdClosedTime = DateTime.now(); // 🔥 И ЗДЕСЬ
                 ad.dispose();
                 _loadInterstitialAd();
               },
             );
-
-            debugPrint('✅ Interstitial ad loaded');
           },
           onAdFailedToLoad: (error) {
             debugPrint('❌ Interstitial ad failed to load: $error');
@@ -104,21 +109,24 @@ class AdMobService {
             ad.fullScreenContentCallback = FullScreenContentCallback(
               onAdShowedFullScreenContent: (ad) {
                 _logAdImpression('rewarded');
+                _isShowingAnyAd = true;
               },
               onAdClicked: (ad) {
                 _logAdClick('rewarded');
               },
               onAdDismissedFullScreenContent: (ad) {
+                _isShowingAnyAd = false;
+                _lastAdClosedTime = DateTime.now(); // 🔥 ЗДЕСЬ
                 ad.dispose();
                 _loadRewardedAd();
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
+                _isShowingAnyAd = false;
+                _lastAdClosedTime = DateTime.now(); // 🔥 И ЗДЕСЬ
                 ad.dispose();
                 _loadRewardedAd();
               },
             );
-
-            debugPrint('✅ Rewarded ad loaded');
           },
           onAdFailedToLoad: (error) {
             debugPrint('❌ Rewarded ad failed to load: $error');
@@ -143,28 +151,30 @@ class AdMobService {
             ad.fullScreenContentCallback = FullScreenContentCallback(
               onAdShowedFullScreenContent: (ad) {
                 _logAdImpression('app_open');
+                _isShowingAnyAd = true;
               },
               onAdClicked: (ad) {
                 _logAdClick('app_open');
               },
               onAdDismissedFullScreenContent: (ad) {
+                _isShowingAnyAd = false;
+                _lastAdClosedTime = DateTime.now(); // 🔥 ЗДЕСЬ
                 ad.dispose();
                 _loadAppOpenAd();
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
+                _isShowingAnyAd = false;
+                _lastAdClosedTime = DateTime.now(); // 🔥 И ЗДЕСЬ
                 ad.dispose();
                 _loadAppOpenAd();
               },
             );
-
-            debugPrint('✅ App Open ad loaded');
           },
           onAdFailedToLoad: (error) {
             debugPrint('❌ App Open ad failed to load: $error');
             Future.delayed(const Duration(seconds: 30), _loadAppOpenAd);
           },
         ),
-        // Параметр orientation был удален в новой версии API
       );
     } catch (e) {
       debugPrint('❌ Error loading app open ad: $e');
@@ -199,14 +209,23 @@ class AdMobService {
   // Методы для показа рекламы
   Future<bool> showInterstitialAd() async {
     try {
+      // Проверяем, не показывается ли уже реклама
+      if (_isShowingAnyAd) {
+        debugPrint('⚠️ Already showing an ad, skipping interstitial');
+        return false;
+      }
+
       if (_interstitialAd == null) {
         await _loadInterstitialAd();
         return false;
       }
 
+      _isShowingAnyAd = true;
       await _interstitialAd?.show();
+      _isShowingAnyAd = false;
       return true;
     } catch (e) {
+      _isShowingAnyAd = false;
       debugPrint('❌ Error showing interstitial ad: $e');
       return false;
     }
@@ -214,16 +233,24 @@ class AdMobService {
 
   Future<bool> showRewardedAd() async {
     try {
+      if (_isShowingAnyAd) {
+        debugPrint('⚠️ Already showing an ad, skipping rewarded');
+        return false;
+      }
+
       if (_rewardedAd == null) {
         await _loadRewardedAd();
         return false;
       }
 
+      _isShowingAnyAd = true;
       await _rewardedAd?.show(onUserEarnedReward: (ad, reward) {
         debugPrint('🎁 User earned reward: ${reward.amount} ${reward.type}');
       });
+      _isShowingAnyAd = false;
       return true;
     } catch (e) {
+      _isShowingAnyAd = false;
       debugPrint('❌ Error showing rewarded ad: $e');
       return false;
     }
@@ -231,11 +258,27 @@ class AdMobService {
 
   Future<bool> showAppOpenAd() async {
     try {
-      if (_appOpenAd == null) {
-        await _loadAppOpenAd();
+      // Проверяем, что не показывается другая реклама
+      if (_isShowingAnyAd) {
+        debugPrint('⚠️ Already showing an ad, skipping app open');
         return false;
       }
 
+      // 🔥 Проверяем, что не было рекламы в последние 30 секунд
+      if (_lastAdClosedTime != null) {
+        final timeSinceLastAd = DateTime.now().difference(_lastAdClosedTime!);
+        if (timeSinceLastAd < Duration(seconds: 30)) {
+          debugPrint('⏳ Too soon after last ad for app open (${timeSinceLastAd.inSeconds}s ago)');
+          return false;
+        }
+      }
+
+      if (_appOpenAd == null) {
+        debugPrint('⚠️ App Open Ad not loaded');
+        return false;
+      }
+
+      debugPrint('🎬 Showing App Open Ad');
       await _appOpenAd?.show();
       return true;
     } catch (e) {
@@ -243,6 +286,9 @@ class AdMobService {
       return false;
     }
   }
+
+  // Добавьте переменную в класс:
+  DateTime? _lastAdClosedTime;
 
   Widget getBannerAd() {
     _bannerAd ??= BannerAd(

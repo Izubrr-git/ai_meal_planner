@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
+import '../ads/ad_cooldown_manager.dart';
+import '../ads/ad_manager.dart';
+import '../ads/unity_levelplay_service.dart';
 import 'analytics_config.dart';
 import 'appsflyer_service.dart';
 import 'firebase_analytics_service.dart';
@@ -13,6 +16,11 @@ class AnalyticsManager {
   final AppsFlyerService _appsFlyerService;
   final FirebaseAnalyticsService _firebaseAnalyticsService;
   final AdMobService _adMobService;
+
+  // 🔥 Добавляем защиту
+  bool _isProcessingAd = false;
+  DateTime? _lastAdShownTime;
+  static const Duration _minAdInterval = Duration(seconds: 5);
 
   AnalyticsManager._private()
       : _appsFlyerService = AppsFlyerService(),
@@ -39,6 +47,14 @@ class AnalyticsManager {
       debugPrint('✅ All analytics services initialized');
     } catch (e) {
       debugPrint('❌ Error initializing analytics: $e');
+    }
+  }
+
+  Future<void> initializeAdMob() async {
+    try {
+      await _adMobService.initialize();
+    } catch (e) {
+      debugPrint('❌ Error initializing AdMob: $e');
     }
   }
 
@@ -77,9 +93,26 @@ class AnalyticsManager {
   // AdMob методы
   Future<bool> showInterstitialAd() async {
     try {
+      // 🔥 MEDIATION WATERFALL 🔥
+
+      // 1. Сначала пробуем Unity LevelPlay (бывший ironSource)
+      try {
+        final unityService = UnityLevelPlayService();
+        if (await unityService.isInterstitialReady()) {
+          debugPrint('🎮 Using Unity LevelPlay interstitial');
+          final result = await unityService.showInterstitial();
+          if (result) return true;
+        }
+      } catch (e) {
+        debugPrint('⚠️ Unity LevelPlay failed: $e');
+      }
+
+      // 2. Fallback на AdMob
+      debugPrint('🔄 Falling back to AdMob interstitial');
       return await _adMobService.showInterstitialAd();
+
     } catch (e) {
-      debugPrint('❌ Error showing interstitial ad: $e');
+      debugPrint('❌ All interstitial networks failed: $e');
       return false;
     }
   }
@@ -129,12 +162,16 @@ class AnalyticsManager {
     };
 
     try {
-      // Запускаем оба лога параллельно
+      // Логируем в аналитику
       unawaited(_appsFlyerService.logEvent(AnalyticsConfig.eventPlanGenerated, eventData));
       unawaited(_firebaseAnalyticsService.logEvent(
         name: AnalyticsConfig.eventPlanGenerated,
         parameters: eventData,
       ));
+
+      // Показываем интерстишиал (без ожидания)
+      unawaited(showInterstitialWithCooldown());
+
     } catch (e) {
       debugPrint('⚠️ Error logging plan generated event: $e');
     }
@@ -161,6 +198,40 @@ class AnalyticsManager {
       ));
     } catch (e) {
       debugPrint('⚠️ Error logging plan shared event: $e');
+    }
+  }
+
+  final AdCooldownManager _adCooldownManager = AdCooldownManager();
+
+  Future<bool> showInterstitialWithCooldown() async {
+    // Защита от одновременных вызовов
+    if (_isProcessingAd) {
+      debugPrint('⚠️ Ad is already being processed');
+      return false;
+    }
+
+    // Проверяем минимальный интервал
+    if (_lastAdShownTime != null) {
+      final timeSinceLastAd = DateTime.now().difference(_lastAdShownTime!);
+      if (timeSinceLastAd < _minAdInterval) {
+        debugPrint('⏳ Too soon since last ad: ${timeSinceLastAd.inSeconds}s');
+        return false;
+      }
+    }
+
+    _isProcessingAd = true;
+
+    try {
+      final shown = await showInterstitialAd();
+
+      if (shown) {
+        _lastAdShownTime = DateTime.now();
+        _adCooldownManager.endAdShow();
+      }
+
+      return shown;
+    } finally {
+      _isProcessingAd = false;
     }
   }
 

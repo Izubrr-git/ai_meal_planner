@@ -114,6 +114,7 @@ class UnityLevelPlayService {
   static UnityLevelPlayService? _instance;
   bool _initialized = false;
   bool _isInitializing = false;
+  bool _isShowingAd = false;
   final Completer<void> _initCompleter = Completer<void>();
 
   // Рекламные блоки и слушатели
@@ -173,7 +174,6 @@ class UnityLevelPlayService {
       _isInitializing = false;
       debugPrint('❌ Error during LevelPlay.init: $e\n$stack');
       _initCompleter.completeError(e);
-      rethrow;
     }
   }
 
@@ -225,6 +225,11 @@ class UnityLevelPlayService {
   /// Показать Interstitial рекламу
   Future<bool> showInterstitial({String? placementName}) async {
     try {
+      if (_isShowingAd) {
+        debugPrint('⚠️ Unity LevelPlay: Already showing an ad');
+        return false;
+      }
+
       if (!_initialized) {
         debugPrint('⚠️ Unity LevelPlay not initialized, initializing now...');
         await initialize();
@@ -232,16 +237,19 @@ class UnityLevelPlayService {
 
       final isReady = await _interstitialAd.isAdReady();
       if (!isReady) {
-        debugPrint('⏳ Interstitial not ready yet');
+        debugPrint('⏳ Unity LevelPlay: Interstitial not ready yet');
         unawaited(_loadInterstitialAd());
         return false;
       }
 
-      debugPrint('🎬 Showing interstitial ad...');
+      debugPrint('🎬 Unity LevelPlay: Showing interstitial ad...');
+      _isShowingAd = true;
       await _interstitialAd.showAd(placementName: placementName);
+      _isShowingAd = false;
       return true;
     } catch (e, stack) {
-      debugPrint('❌ Error showing interstitial: $e\n$stack');
+      _isShowingAd = false;
+      debugPrint('❌ Unity LevelPlay: Error showing interstitial: $e\n$stack');
       return false;
     }
   }

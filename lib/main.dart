@@ -45,13 +45,55 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
 
-    // Показываем рекламу при открытии приложения
-    _showAppOpenAd();
+    // Откладываем показ App Open Ad на 3 секунды после запуска
+    Future.delayed(const Duration(seconds: 3), () {
+      _showAppOpenAdSafely();
+    });
   }
 
-  Future<void> _showAppOpenAd() async {
-    await Future.delayed(const Duration(seconds: 1));
-    await _analyticsManager.showAppOpenAd();
+  Future<void> _showAppOpenAdSafely() async {
+    try {
+      final now = DateTime.now();
+
+      // Проверяем время с момента запуска приложения
+      final timeSinceStart = now.difference(_appStartTime);
+      if (timeSinceStart < Duration(seconds: 2)) {
+        debugPrint('⏳ Waiting for app to stabilize');
+        return;
+      }
+
+      await AnalyticsManager().showAppOpenAd();
+    } catch (e) {
+      debugPrint('❌ Error in showAppOpenAdSafely: $e');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // При возврате в приложение ждем 5 секунд
+      Future.delayed(const Duration(seconds: 5), () {
+        _showAppOpenAdSafely();
+      });
+    }
+  }
+
+  // Добавьте в класс:
+  DateTime _appStartTime = DateTime.now();
+
+  Future<void> _showAppOpenAdIfSafe() async {
+    try {
+      // Проверяем, что не было рекламы в последние 5 секунд
+      final analytics = AnalyticsManager();
+
+      // Ждем 500мс для стабильности
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      // Показываем App Open Ad
+      await analytics.showAppOpenAd();
+    } catch (e) {
+      debugPrint('❌ Error showing app open ad: $e');
+    }
   }
 
   @override
@@ -59,13 +101,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.removeObserver(this);
     _analyticsManager.dispose();
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _showAppOpenAd();
-    }
   }
 
   @override

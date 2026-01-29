@@ -116,7 +116,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       try {
         await ref.read(mealPlanProvider.notifier).clearApiKey();
 
-        // 🔥 ИСПРАВЛЕНИЕ: Редирект на ApiKeyScreen БЕЗ возможности возврата
         if (mounted) {
           Navigator.pushAndRemoveUntil(
             context,

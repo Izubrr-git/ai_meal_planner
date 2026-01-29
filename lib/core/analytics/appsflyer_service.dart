@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'package:apphud/models/apphud_models/apphud_attribution_data.dart';
+import 'package:apphud/models/apphud_models/apphud_attribution_provider.dart';
 import 'package:appsflyer_sdk/appsflyer_sdk.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:apphud/apphud.dart';
 
 import 'analytics_config.dart';
 
@@ -21,6 +24,9 @@ class AppsFlyerService {
   Future<void> initialize() async {
     try {
       if (_initialized) return;
+
+      // Инициализируем AppHud ПЕРВЫМ делом
+      await Apphud.start(apiKey: 'app_5z29xuZvQgGu95Yo8oVWVzmoRJLzAN');
 
       final options = {
         'afDevKey': AnalyticsConfig.appsFlyerDevKey,
@@ -58,12 +64,10 @@ class AppsFlyerService {
       _initialized = true;
       debugPrint('✅ AppsFlyer initialized successfully');
 
-      // Запускаем SDK без await, так как метод возвращает void
       _startSdk();
 
     } catch (e) {
       debugPrint('❌ AppsFlyer initialization error: $e');
-      // Завершаем Completer с ошибкой
       _startSdkCompleter?.completeError(e);
     }
   }
@@ -107,18 +111,33 @@ class AppsFlyerService {
     return _startSdkCompleter!.future;
   }
 
-  void _sendConversionToAppHud(Map<dynamic, dynamic> conversionData) {
+  void _sendConversionToAppHud(Map<dynamic, dynamic> conversionData) async {
     try {
-      final afStatus = conversionData['af_status'];
-      final campaign = conversionData['campaign'];
-      final mediaSource = conversionData['media_source'];
+      final uid = await _appsflyerSdk.getAppsFlyerUID();
 
-      debugPrint('📊 AppHud Attribution - Status: $afStatus, Campaign: $campaign, Source: $mediaSource');
+      if (uid != null && uid.isNotEmpty) {
+        // Создаем объект атрибуции
+        final attributionData = ApphudAttributionData(
+          rawData: conversionData.cast<String, dynamic>(),
+          adNetwork: conversionData['media_source']?.toString(),
+          channel: conversionData['channel']?.toString(),
+          campaign: conversionData['campaign']?.toString(),
+          adSet: conversionData['adset']?.toString(),
+          creative: conversionData['ad']?.toString(),
+          keyword: conversionData['keyword']?.toString(),
+        );
 
-      // Реализуйте интеграцию с AppHud здесь
-      // Пример: await Apphud.sdk.addAttribution(...)
+        // Передаем атрибуцию в AppHud
+        await Apphud.setAttribution(
+          provider: ApphudAttributionProvider.appsFlyer,
+          identifier: uid,
+          data: attributionData,
+        );
+
+        debugPrint('✅ AppHud attribution sent for UID: $uid');
+      }
     } catch (e) {
-      debugPrint('❌ Error sending conversion to AppHud: $e');
+      debugPrint('❌ Error sending attribution to AppHud: $e');
     }
   }
 

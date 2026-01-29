@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.aimealplanner.ai_meal_planner"
-        minSdk = flutter.minSdkVersion
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName

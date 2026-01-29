@@ -2,6 +2,7 @@ import 'package:ai_meal_planner/features/meal_planner/presentation/screens/setti
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/ads/ad_navigation_mixin.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/error_widget.dart';
 import '../../../../core/analytics/analytics_manager.dart';
@@ -19,7 +20,7 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with AdNavigationMixin  {
   UserPreferences? _userPreferences;
 
   @override
@@ -40,23 +41,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await ref.read(mealPlanProvider.notifier).loadSavedPlans();
   }
 
-  void _navigateToGenerator() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PlanGeneratorScreen(
-          initialPreferences: _userPreferences,
-        ),
-      ),
-    );
+  bool _isNavigating = false;
+
+  Future<void> _navigateWithAd(Widget page) async {
+    if (_isNavigating) return;
+    _isNavigating = true;
+
+    try {
+      await AnalyticsManager().showInterstitialWithCooldown();
+
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => page),
+        );
+      }
+    } finally {
+      _isNavigating = false;
+    }
   }
 
-  void _navigateToHistory() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const HistoryScreen()),
-    );
-  }
+  // Использование:
+  void _navigateToSettings() => _navigateWithAd(const SettingsScreen());
+  void _navigateToHistory() => _navigateWithAd(const HistoryScreen());
+  void _navigateToGenerator() => _navigateWithAd(
+    PlanGeneratorScreen(initialPreferences: _userPreferences),
+  );
 
   void _quickGenerate() async {
     final preferences = _userPreferences ?? UserPreferences.defaults();
@@ -91,14 +101,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
-              );
-            },
+            onPressed: _navigateToSettings,
           ),
           IconButton(
             icon: const Icon(Icons.history),
