@@ -2,8 +2,10 @@ import 'package:ai_meal_planner/features/meal_planner/presentation/screens/setti
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/ads/ad_navigation_mixin.dart';
 import '../../../../shared/widgets/app_button.dart';
 import '../../../../shared/widgets/error_widget.dart';
+import '../../../../core/analytics/analytics_manager.dart';
 import '../../domain/entities/user_preferencies.dart';
 import '../providers/meal_plan_provider.dart';
 import '../widgets/meal_card.dart';
@@ -18,7 +20,7 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with AdNavigationMixin  {
   UserPreferences? _userPreferences;
 
   @override
@@ -39,23 +41,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await ref.read(mealPlanProvider.notifier).loadSavedPlans();
   }
 
-  void _navigateToGenerator() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PlanGeneratorScreen(
-          initialPreferences: _userPreferences,
-        ),
-      ),
-    );
+  bool _isNavigating = false;
+
+  Future<void> _navigateWithAd(Widget page) async {
+    if (_isNavigating) return;
+    _isNavigating = true;
+
+    try {
+      await AnalyticsManager().showInterstitialWithCooldown();
+
+      if (mounted) {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => page),
+        );
+      }
+    } finally {
+      _isNavigating = false;
+    }
   }
 
-  void _navigateToHistory() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const HistoryScreen()),
-    );
-  }
+  void _navigateToSettings() => _navigateWithAd(const SettingsScreen());
+  void _navigateToHistory() => _navigateWithAd(const HistoryScreen());
+  void _navigateToGenerator() => _navigateWithAd(
+    PlanGeneratorScreen(initialPreferences: _userPreferences),
+  );
 
   void _quickGenerate() async {
     final preferences = _userPreferences ?? UserPreferences.defaults();
@@ -90,14 +100,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsScreen(),
-                ),
-              );
-            },
+            onPressed: _navigateToSettings,
           ),
           IconButton(
             icon: const Icon(Icons.history),
@@ -137,6 +140,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       onPressed: _quickGenerate,
                       text: 'Быстрая генерация',
                     ),
+                    const SizedBox(height: 24),
+                    AnalyticsManager().getBannerAd(),
                   ],
                 ),
               ),
@@ -163,24 +168,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         children: [
                           Chip(
                             label: Text(_userPreferences!.goal),
-                            backgroundColor: Colors.green.withOpacity(0.1),
+                            backgroundColor: Colors.green.withValues(alpha: 0.1),
                           ),
                           if (_userPreferences!.targetCalories != null)
                             Chip(
                               label: Text('${_userPreferences!.targetCalories} ккал'),
-                              backgroundColor: Colors.blue.withOpacity(0.1),
+                              backgroundColor: Colors.blue.withValues(alpha: 0.1),
                             ),
                           ..._userPreferences!.restrictions
                               .where((r) => r != 'Без ограничений')
                               .map((restriction) => Chip(
                             label: Text(restriction),
-                            backgroundColor: Colors.orange.withOpacity(0.1),
+                            backgroundColor: Colors.orange.withValues(alpha: 0.1),
                           )),
                           ..._userPreferences!.allergies
                               .where((a) => a != 'Нет')
                               .map((allergy) => Chip(
                             label: Text(allergy),
-                            backgroundColor: Colors.red.withOpacity(0.1),
+                            backgroundColor: Colors.red.withValues(alpha: 0.1),
                           )),
                         ],
                       ),

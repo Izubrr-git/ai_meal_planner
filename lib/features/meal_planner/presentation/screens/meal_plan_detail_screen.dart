@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../../core/analytics/analytics_manager.dart';
 import '../../domain/entities/meal.dart';
 import '../../domain/entities/meal_plan.dart';
 
@@ -130,7 +131,7 @@ class MealPlanDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _buildMealCard('Перекус', snack),
               );
-            }).toList(),
+            }),
           ],
 
           const SizedBox(height: 20),
@@ -295,57 +296,79 @@ class MealPlanDetailScreen extends StatelessWidget {
           (sum, day) => sum + day.totalCalories,
     ) ~/ plan.days;
 
-    Share.share(
-      '''
-      🥗 План питания от AI Meal Planner
-      
-      🎯 Цель: ${plan.goal}
-      📅 Период: ${plan.days} дней
-      🔥 Калории в день: $totalCalories ккал
-      🚫 Ограничения: ${plan.restrictions.join(', ')}
-      ⚠️ Аллергии: ${plan.allergies.join(', ')}
-      
-      📋 Описание плана:
-      ${plan.summary}
-      
-      💡 Рекомендации:
-      ${plan.recommendations.map((r) => '• $r').join('\n')}
-      
-      Создано в приложении AI Meal Planner 🍽️
-      ''',
-      subject: 'Мой план питания на ${plan.days} дней',
+    SharePlus.instance.share(
+      ShareParams(
+        text: '''
+        🥗 План питания от AI Meal Planner
+        
+        🎯 Цель: ${plan.goal}
+        📅 Период: ${plan.days} дней
+        🔥 Калории в день: $totalCalories ккал
+        🚫 Ограничения: ${plan.restrictions.join(', ')}
+        ⚠️ Аллергии: ${plan.allergies.join(', ')}
+        
+        📋 Описание плана:
+        ${plan.summary}
+        
+        💡 Рекомендации:
+        ${plan.recommendations.map((r) => '• $r').join('\n')}
+        
+        Создано в приложении AI Meal Planner 🍽️
+        ''',
+        subject: 'Мой план питания на ${plan.days} дней',
+      ),
+    );
+
+
+    AnalyticsManager().logPlanShared(
+      shareType: 'full_plan',
+      days: plan.days,
+      goal: plan.goal,
     );
   }
+
   void _shareDay(MealDay day) {
-    Share.share(
-      '''
-      📅 ${day.day} (${day.date})
-      
-      🍽️ Питание на день:
-      
-      Завтрак: ${day.meals['breakfast']?.name}
-      • ${day.meals['breakfast']?.description}
-      • ${day.meals['breakfast']?.calories} ккал
-      
-      Обед: ${day.meals['lunch']?.name}
-      • ${day.meals['lunch']?.description}
-      • ${day.meals['lunch']?.calories} ккал
-      
-      Ужин: ${day.meals['dinner']?.name}
-      • ${day.meals['dinner']?.description}
-      • ${day.meals['dinner']?.calories} ккал
-      
-      ${day.snacks.isNotEmpty ? 'Перекусы:\n${day.snacks.map((s) => '• ${s.name} - ${s.calories} ккал').join('\n')}' : ''}
-      
-      📊 Итоги дня:
-      • Всего калорий: ${day.totalCalories} ккал
-      • Белки: ${day.macros['protein']}г
-      • Углеводы: ${day.macros['carbs']}г
-      • Жиры: ${day.macros['fat']}г
-      
-      Создано в приложении AI Meal Planner 🍽️
-      ''',
-      subject: 'План питания на ${day.day}',
+    SharePlus.instance.share(
+      ShareParams(
+        text: '''
+        📅 ${day.day} (${day.date})
+        
+        🍽️ Питание на день:
+        
+        Завтрак: ${day.meals['breakfast']?.name}
+        • ${day.meals['breakfast']?.description}
+        • ${day.meals['breakfast']?.calories} ккал
+        
+        Обед: ${day.meals['lunch']?.name}
+        • ${day.meals['lunch']?.description}
+        • ${day.meals['lunch']?.calories} ккал
+        
+        Ужин: ${day.meals['dinner']?.name}
+        • ${day.meals['dinner']?.description}
+        • ${day.meals['dinner']?.calories} ккал
+        
+        ${day.snacks.isNotEmpty
+                    ? 'Перекусы:\n${day.snacks.map((s) => '• ${s.name} - ${s.calories} ккал').join('\n')}'
+                    : ''}
+        
+        📊 Итоги дня:
+        • Всего калорий: ${day.totalCalories} ккал
+        • Белки: ${day.macros['protein']}г
+        • Углеводы: ${day.macros['carbs']}г
+        • Жиры: ${day.macros['fat']}г
+        
+        Создано в приложении AI Meal Planner 🍽️
+        ''',
+        subject: 'План питания на ${day.day}',
+      ),
+    );
+
+
+    AnalyticsManager().logPlanShared(
+      shareType: 'day',
+      days: plan.days,
+      goal: plan.goal,
     );
   }
+
 }

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "583535065625",
+    "project_id": "aimealplanner-42442",
+    "storage_bucket": "aimealplanner-42442.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583535065625:android:7ce7a53faef59272148888",
+        "android_client_info": {
+          "package_name": "com.aimealplanner.ai_meal_planner"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3Q8-56mnG1ow3lQFM_6rs1W14f-wyrVk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:583535065625:android:8278be41d63d069e148888",
+        "android_client_info": {
+          "package_name": "com.nicfuno.sonicforgeflow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD3Q8-56mnG1ow3lQFM_6rs1W14f-wyrVk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

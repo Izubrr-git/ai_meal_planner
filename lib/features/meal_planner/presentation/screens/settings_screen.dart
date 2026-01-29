@@ -116,17 +116,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       try {
         await ref.read(mealPlanProvider.notifier).clearApiKey();
 
-        // 🔥 ИСПРАВЛЕНИЕ: Редирект на ApiKeyScreen БЕЗ возможности возврата
         if (mounted) {
           Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (context) => const ApiKeyScreen()),
-                (route) => false, // Удаляем ВСЕ предыдущие экраны из стека
+                (route) => false,
           );
         }
       } catch (e) {
         if (mounted) {
-          // Если ошибка - показываем уведомление, но остаемся на экране
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Ошибка очистки: $e'),
@@ -237,7 +235,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 16),
 
                       DropdownButtonFormField<String>(
-                        value: _preferences.gender ?? 'Мужской',
+                        initialValue: _preferences.gender ?? 'Мужской',
                         decoration: const InputDecoration(
                           labelText: 'Пол',
                           border: OutlineInputBorder(),
@@ -329,7 +327,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       const SizedBox(height: 12),
 
                       DropdownButtonFormField<String>(
-                        value: _preferences.activityLevel,
+                        initialValue: _preferences.activityLevel,
                         decoration: const InputDecoration(
                           labelText: 'Уровень активности',
                           border: OutlineInputBorder(),

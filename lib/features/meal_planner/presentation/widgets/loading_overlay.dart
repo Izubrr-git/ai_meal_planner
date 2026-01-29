@@ -25,10 +25,8 @@ class LoadingOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // Основной контент
         child,
 
-        // Загрузочный оверлей
         if (isLoading)
           Positioned.fill(
             child: ModalBarrier(
@@ -37,7 +35,6 @@ class LoadingOverlay extends StatelessWidget {
             ),
           ),
 
-        // Индикатор загрузки
         if (isLoading)
           Center(
             child: _buildLoadingContent(context),
@@ -50,11 +47,11 @@ class LoadingOverlay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.background.withOpacity(0.95),
+        color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             spreadRadius: 2,
           ),
@@ -84,7 +81,7 @@ class LoadingOverlay extends StatelessWidget {
                 message!,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onBackground,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -118,7 +115,7 @@ class TransparentLoadingOverlay extends StatelessWidget {
         if (isLoading)
           Positioned.fill(
             child: Container(
-              color: backgroundColor ?? Colors.black.withOpacity(0.3),
+              color: backgroundColor ?? Colors.black.withValues(alpha: 0.3),
               child: Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -162,7 +159,7 @@ class _CancelableLoadingOverlayState extends State<CancelableLoadingOverlay> {
       children: [
         widget.child,
         if (widget.isLoading)
-          Positioned.fill(
+          const Positioned.fill(
             child: ModalBarrier(
               color: Colors.black54,
               dismissible: false,
@@ -173,11 +170,11 @@ class _CancelableLoadingOverlayState extends State<CancelableLoadingOverlay> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.background,
+                color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withValues(alpha: 0.2),
                     blurRadius: 12,
                     spreadRadius: 2,
                   ),
@@ -305,7 +302,7 @@ class LoadingDialog {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.background,
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -316,7 +313,7 @@ class LoadingDialog {
                   Theme.of(context).colorScheme.primary,
                 ),
               ),
-              if (message != null && message!.isNotEmpty) ...[
+              if (message != null && message.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text(
                   message,

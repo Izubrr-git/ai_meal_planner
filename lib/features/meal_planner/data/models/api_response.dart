@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import '../../domain/entities/meal.dart';
 import '../../domain/entities/meal_plan.dart';
 
 class ApiResponse {

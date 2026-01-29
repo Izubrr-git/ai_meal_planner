@@ -1,70 +1,95 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'core/di/service_locator.dart';
+import 'core/analytics/analytics_manager.dart';
+import 'app/app.dart';
 import 'core/constants/api_keys.dart';
+import 'core/di/service_locator.dart';
 import 'features/meal_planner/presentation/screens/home_screen.dart';
-import 'features/meal_planner/presentation/screens/api_key_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize API keys
   await ApiKeys.init();
 
-  // Initialize services
   await ServiceLocator.init();
 
+  await SharedPreferences.getInstance();
+
+  unawaited(AnalyticsManager().initialize());
+
   runApp(
-    const ProviderScope(
+    ProviderScope(
       child: MyApp(),
     ),
   );
 }
 
-class MyApp extends ConsumerWidget {
-  const MyApp({super.key});
-
+class MyApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final apiKeyState = ref.watch(apiKeyConfiguredProvider);
-
-    return MaterialApp(
-      title: 'AI Meal Planner',
-      themeMode: ThemeMode.system,
-      debugShowCheckedModeBanner: false,
-      home: apiKeyState.when(
-        data: (isConfigured) => isConfigured ? const HomeScreen() : const ApiKeyScreen(),
-        loading: () => const _SplashScreen(),
-        error: (error, stack) => const ApiKeyScreen(),
-      ),
-    );
-  }
+  State<MyApp> createState() => _MyAppState();
 }
 
-class _SplashScreen extends StatelessWidget {
-  const _SplashScreen();
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  final AnalyticsManager _analyticsManager = AnalyticsManager();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    Future.delayed(const Duration(seconds: 3), () {
+      _showAppOpenAdSafely();
+    });
+  }
+
+  Future<void> _showAppOpenAdSafely() async {
+    try {
+      final now = DateTime.now();
+
+      final timeSinceStart = now.difference(_appStartTime);
+      if (timeSinceStart < const Duration(seconds: 2)) {
+        debugPrint('⏳ Waiting for app to stabilize');
+        return;
+      }
+
+      await AnalyticsManager().showAppOpenAd();
+    } catch (e) {
+      debugPrint('❌ Error in showAppOpenAdSafely: $e');
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+
+      Future.delayed(const Duration(seconds: 5), () {
+        _showAppOpenAdSafely();
+      });
+    }
+  }
+
+  final DateTime _appStartTime = DateTime.now();
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _analyticsManager.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.background,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Проверка настроек...',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-          ],
-        ),
+    return MaterialApp(
+      title: AppConfig.appName,
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        useMaterial3: true,
       ),
+      home: HomeScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -27,7 +27,6 @@ class AppErrorWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Заголовок с кнопкой закрытия
           Row(
             children: [
               Icon(Icons.error, color: Colors.red[700], size: 20),
@@ -56,7 +55,6 @@ class AppErrorWidget extends StatelessWidget {
 
           const SizedBox(height: 8),
 
-          // Текст ошибки
           Text(
             error,
             style: TextStyle(color: Colors.red[700]),

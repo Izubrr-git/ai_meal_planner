@@ -1,5 +1,4 @@
 class Validators {
-  /// Проверка обязательного поля
   static String? validateRequired(String? value, {String fieldName = 'Поле'}) {
     if (value == null || value.trim().isEmpty) {
       return '$fieldName обязательно для заполнения';
@@ -7,7 +6,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка email
   static String? validateEmail(String? value) {
     if (value == null || value.isEmpty) {
       return 'Введите email';
@@ -24,7 +22,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка пароля
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {
       return 'Введите пароль';
@@ -37,7 +34,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка номера телефона
   static String? validatePhone(String? value) {
     if (value == null || value.isEmpty) {
       return 'Введите номер телефона';
@@ -52,10 +48,9 @@ class Validators {
     return null;
   }
 
-  /// Проверка калорий
   static String? validateCalories(String? value) {
     if (value == null || value.isEmpty) {
-      return null; // Калории не обязательны
+      return null;
     }
 
     final calories = int.tryParse(value);
@@ -74,7 +69,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка веса
   static String? validateWeight(String? value) {
     if (value == null || value.isEmpty) {
       return 'Введите вес';
@@ -96,7 +90,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка роста
   static String? validateHeight(String? value) {
     if (value == null || value.isEmpty) {
       return 'Введите рост';
@@ -118,7 +111,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка возраста
   static String? validateAge(String? value) {
     if (value == null || value.isEmpty) {
       return 'Введите возраст';
@@ -140,7 +132,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка, что значение является числом
   static String? validateNumber(String? value, {String fieldName = 'Значение'}) {
     if (value == null || value.isEmpty) {
       return '$fieldName обязательно';
@@ -153,7 +144,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка положительного числа
   static String? validatePositiveNumber(String? value, {String fieldName = 'Значение'}) {
     final error = validateNumber(value, fieldName: fieldName);
     if (error != null) return error;
@@ -166,7 +156,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка соответствия паролей
   static String? validatePasswordConfirmation(String? value, String password) {
     if (value == null || value.isEmpty) {
       return 'Подтвердите пароль';
@@ -179,7 +168,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка минимальной длины
   static String? validateMinLength(String? value, int minLength, {String fieldName = 'Поле'}) {
     if (value == null || value.length < minLength) {
       return '$fieldName должно содержать минимум $minLength символов';
@@ -187,7 +175,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка максимальной длины
   static String? validateMaxLength(String? value, int maxLength, {String fieldName = 'Поле'}) {
     if (value != null && value.length > maxLength) {
       return '$fieldName должно содержать максимум $maxLength символов';
@@ -195,7 +182,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка диапазона длины
   static String? validateLengthRange(String? value, int min, int max, {String fieldName = 'Поле'}) {
     if (value == null) {
       return '$fieldName обязательно';
@@ -208,10 +194,9 @@ class Validators {
     return null;
   }
 
-  /// Проверка URL
   static String? validateUrl(String? value) {
     if (value == null || value.isEmpty) {
-      return null; // URL не обязателен
+      return null;
     }
 
     final urlRegex = RegExp(
@@ -226,7 +211,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка даты
   static String? validateDate(String? value) {
     if (value == null || value.isEmpty) {
       return 'Выберите дату';
@@ -240,7 +224,6 @@ class Validators {
     }
   }
 
-  /// Проверка, что дата не в будущем
   static String? validatePastDate(DateTime? date, {String fieldName = 'Дата'}) {
     if (date == null) {
       return 'Выберите $fieldName';
@@ -253,7 +236,6 @@ class Validators {
     return null;
   }
 
-  /// Проверка, что дата не в прошлом
   static String? validateFutureDate(DateTime? date, {String fieldName = 'Дата'}) {
     if (date == null) {
       return 'Выберите $fieldName';
@@ -266,7 +248,6 @@ class Validators {
     return null;
   }
 
-  /// Комплексная проверка нескольких валидаторов
   static String? validateMultiple(List<String? Function()> validators) {
     for (final validator in validators) {
       final error = validator();

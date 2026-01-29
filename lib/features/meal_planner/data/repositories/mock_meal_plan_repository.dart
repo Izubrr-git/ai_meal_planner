@@ -1,4 +1,3 @@
-// lib/features/meal_planner/data/repositories/mock_meal_plan_repository.dart
 import '../../../../core/mocks/meal_plan_mocks.dart';
 import '../../domain/entities/meal_plan.dart';
 import '../../domain/entities/user_preferencies.dart';
@@ -16,7 +15,6 @@ class MockMealPlanRepository implements MealPlanRepository {
     required List<String> allergies,
     required int days,
   }) async {
-    // Имитация задержки API
     await Future.delayed(const Duration(seconds: 2));
 
     return MealPlanMocks.mockMealPlan.copyWith(
